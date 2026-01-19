@@ -58,6 +58,10 @@ export default function Home() {
           <h1 className="text-2xl md:text-3xl text-gray-800 font-light tracking-wide">
             Follow the money.
           </h1>
+          {/* Gold accent dot */}
+          <div className="flex justify-center items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-brand-gold"></div>
+          </div>
           <p className="text-sm md:text-base text-gray-500 font-light max-w-md mx-auto">
             Public transparency. Onchain.
           </p>
@@ -86,7 +90,7 @@ export default function Home() {
                 placeholder="your@email.com"
                 required
                 disabled={loading || message?.type === 'success'}
-                className="w-full px-5 py-4 text-base text-center border-2 border-gray-200 rounded-lg focus:outline-none focus:border-brand-navy focus:ring-0 disabled:opacity-50 disabled:cursor-not-allowed transition-colors placeholder:text-gray-400"
+                className="w-full px-5 py-4 text-base text-center border-2 border-gray-200 rounded-lg focus:outline-none focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors placeholder:text-gray-400"
               />
 
               <button
@@ -102,7 +106,7 @@ export default function Home() {
             {message && (
               <div
                 className={`text-sm font-medium pt-1 ${
-                  message.type === 'success' ? 'text-green-600' : 'text-red-600'
+                  message.type === 'success' ? 'text-brand-gold' : 'text-red-600'
                 }`}
               >
                 {message.text}
