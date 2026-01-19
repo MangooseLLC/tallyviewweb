@@ -10,6 +10,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'Tallyview — Follow the money',
   description: 'Join the waitlist.',
+  icons: {
+    icon: '/icon.svg',
+  },
 }
 
 export default function RootLayout({
