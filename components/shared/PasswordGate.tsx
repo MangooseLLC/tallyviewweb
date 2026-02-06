@@ -4,7 +4,6 @@ import { useState, useEffect, FormEvent } from 'react';
 import Image from 'next/image';
 import { Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
-const SITE_PASSWORD = process.env.NEXT_PUBLIC_SITE_PASSWORD;
 const SESSION_KEY = 'tallyview_site_unlocked';
 
 export default function PasswordGate({ children }: { children: React.ReactNode }) {
@@ -13,15 +12,10 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
-  // If no password is configured, skip the gate entirely
+  // Check sessionStorage on mount
   useEffect(() => {
-    if (!SITE_PASSWORD) {
-      setUnlocked(true);
-      setLoading(false);
-      return;
-    }
-
     try {
       const stored = sessionStorage.getItem(SESSION_KEY);
       if (stored === 'true') {
@@ -33,20 +27,35 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
     setLoading(false);
   }, []);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
+    setSubmitting(true);
 
-    if (password === SITE_PASSWORD) {
-      try {
-        sessionStorage.setItem(SESSION_KEY, 'true');
-      } catch {
-        // sessionStorage not available
+    try {
+      const res = await fetch('/api/verify-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        try {
+          sessionStorage.setItem(SESSION_KEY, 'true');
+        } catch {
+          // sessionStorage not available
+        }
+        setUnlocked(true);
+      } else {
+        setError('Incorrect password. Please try again.');
+        setPassword('');
       }
-      setUnlocked(true);
-    } else {
-      setError('Incorrect password. Please try again.');
-      setPassword('');
+    } catch {
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -125,10 +134,10 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
 
           <button
             type="submit"
-            disabled={!password.trim()}
+            disabled={!password.trim() || submitting}
             className="w-full py-3 rounded-xl bg-brand-gold text-brand-navy font-semibold text-sm transition-all hover:bg-brand-gold-light disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-brand-gold/50 focus:ring-offset-2 focus:ring-offset-brand-navy"
           >
-            Continue
+            {submitting ? 'Verifying...' : 'Continue'}
           </button>
         </form>
       </div>
