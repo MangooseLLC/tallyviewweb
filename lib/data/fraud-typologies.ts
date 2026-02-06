@@ -1,0 +1,317 @@
+import { FraudTypology } from '../types';
+
+export const fraudTypologies: FraudTypology[] = [
+  {
+    id: 'ft-001',
+    name: 'Procurement Steering',
+    description: 'Directing contracts and purchasing decisions to vendors controlled by insiders, their family members, or associates, often without competitive bidding.',
+    redFlags: [
+      'Single vendor receiving disproportionate share of payments',
+      'Vendor owned by or related to organization insiders',
+      'Contracts awarded without competitive bidding process',
+      'Vendor address matches insider\'s personal address',
+      'Vendor incorporated shortly before or after receiving contracts',
+      'Prices significantly above market rate',
+    ],
+    controlFailures: [
+      'No competitive bidding policy or policy not enforced',
+      'Inadequate conflict of interest disclosure process',
+      'No independent procurement oversight committee',
+      'Board not involved in vendor selection for large contracts',
+    ],
+    detectionMethods: [
+      'Vendor-insider relationship matching via address and entity analysis',
+      'Payment concentration analysis (>25% to single vendor)',
+      'Price benchmarking against market rates',
+      'Timing analysis of vendor registration vs. contract dates',
+    ],
+    exampleCases: [
+      'U.S. ex rel. Smith v. Greenfield Healthcare ($12M recovery)',
+      'State v. Pacific Youth Services ($4.2M settlement)',
+      'Northwest Community Health Alliance (current - $8.2M estimated)',
+    ],
+    frequencyInData: 23,
+    category: 'Procurement',
+  },
+  {
+    id: 'ft-002',
+    name: 'Vendor Concentration / Sole-Source Abuse',
+    description: 'Channeling excessive organizational spending to a small number of vendors, typically through repeated sole-source justifications that bypass competitive processes.',
+    redFlags: [
+      'Top 3 vendors represent >50% of total spending',
+      'Repeated sole-source justifications for same vendor',
+      'Vendor scope expanding beyond original contract',
+      'No periodic re-bid of ongoing service contracts',
+      'Vague or unmeasurable service descriptions',
+    ],
+    controlFailures: [
+      'No aggregate spending threshold triggers',
+      'Sole-source approvals not reviewed by independent party',
+      'No vendor performance evaluations',
+      'Procurement policy thresholds set unreasonably high',
+    ],
+    detectionMethods: [
+      'Vendor concentration scoring (Herfindahl index)',
+      'Sole-source frequency analysis',
+      'Contract scope creep tracking',
+      'Peer comparison of vendor diversification',
+    ],
+    exampleCases: [
+      'U.S. ex rel. Johnson v. Metro Services ($6.1M recovery)',
+      'Riverside Youth Services (current - $1.5M estimated)',
+    ],
+    frequencyInData: 18,
+    category: 'Procurement',
+  },
+  {
+    id: 'ft-003',
+    name: 'Executive Compensation Manipulation',
+    description: 'Inappropriate executive compensation including undisclosed benefits, excessive pay relative to organizational size, or compensation increases disproportionate to organizational performance.',
+    redFlags: [
+      'Compensation growth outpacing revenue growth',
+      'Undisclosed benefits (housing, vehicles, travel)',
+      'Compensation above 90th percentile for org size',
+      'No independent compensation committee',
+      'Bonus payments without documented criteria',
+      'Retroactive pay increases',
+    ],
+    controlFailures: [
+      'No independent compensation committee',
+      'No formal compensation comparability study',
+      'Board rubber-stamping executive recommendations',
+      'Inadequate benefit tracking and disclosure',
+    ],
+    detectionMethods: [
+      'Compensation-to-revenue ratio trending',
+      'Peer benchmarking of total compensation',
+      'Non-salary benefit detection through expense analysis',
+      'IRS Form 990 Part VII comparability analysis',
+    ],
+    exampleCases: [
+      'State AG v. Continental Education Foundation ($3.4M recovery)',
+      'Columbia Basin Charity Network (current - $5.6M estimated)',
+    ],
+    frequencyInData: 15,
+    category: 'Compensation',
+  },
+  {
+    id: 'ft-004',
+    name: 'Conflict of Interest — Board/Vendor',
+    description: 'Board members or key employees having undisclosed financial relationships with vendors, resulting in self-dealing transactions that benefit insiders at the organization\'s expense.',
+    redFlags: [
+      'Board member also owns/works for vendor',
+      'Family members of board members are vendors',
+      'Same address across board member and vendor',
+      'Board member fails to recuse from related votes',
+      'Vendor relationship predates board appointment',
+    ],
+    controlFailures: [
+      'Conflict of interest forms not collected annually',
+      'No independent review of board member relationships',
+      'No recusal protocol for conflicted decisions',
+      'Board meeting minutes lack conflict documentation',
+    ],
+    detectionMethods: [
+      'Cross-entity relationship mapping (board to vendor)',
+      'Address matching across board members and vendors',
+      'Business entity database cross-reference',
+      'Annual disclosure review automation',
+    ],
+    exampleCases: [
+      'Willamette Housing Corporation (current - $3.8M estimated)',
+      'State v. Mountain View Charities ($2.1M settlement)',
+    ],
+    frequencyInData: 21,
+    category: 'Governance',
+  },
+  {
+    id: 'ft-005',
+    name: 'Document Provenance Gaps',
+    description: 'Missing, fabricated, or backdated documentation to support expenditures, board decisions, or compliance requirements.',
+    redFlags: [
+      'Board minutes created after meeting dates (metadata analysis)',
+      'Missing supporting documents for major expenditures',
+      'Signatures appearing identical across multiple documents',
+      'Gaps in sequential document numbering',
+      'Documents with unusual formatting inconsistencies',
+    ],
+    controlFailures: [
+      'No document management system',
+      'No independent minute-taking at board meetings',
+      'No document retention policy',
+      'No segregation of document creation and approval',
+    ],
+    detectionMethods: [
+      'Document metadata analysis (creation vs. claimed dates)',
+      'Signature analysis across document corpus',
+      'Sequential numbering gap detection',
+      'Audit trail completeness scoring',
+    ],
+    exampleCases: [
+      'Heritage Foundation NW (current - $890K estimated)',
+      'U.S. v. Central Valley Nonprofit Alliance ($5.3M recovery)',
+    ],
+    frequencyInData: 12,
+    category: 'Documentation',
+  },
+  {
+    id: 'ft-006',
+    name: 'Restricted Fund Diversion',
+    description: 'Using donor-restricted or grant-restricted funds for purposes other than those specified by the funding source, including using restricted funds for operating expenses.',
+    redFlags: [
+      'Restricted fund utilization significantly above or below expected pace',
+      'Restricted funds commingled with operating accounts',
+      'Program spending doesn\'t match grant deliverables',
+      'Multiple restricted grants showing similar spending patterns',
+      'Restricted fund balance declining without corresponding program activity',
+    ],
+    controlFailures: [
+      'No separate tracking accounts for restricted funds',
+      'No periodic reconciliation of restricted fund spending',
+      'Inadequate grant compliance monitoring',
+      'Finance staff not trained on fund accounting',
+    ],
+    detectionMethods: [
+      'Restricted fund utilization pace analysis',
+      'Bank account reconciliation of restricted vs. unrestricted',
+      'Program activity vs. spending correlation',
+      'Cross-grant spending pattern comparison',
+    ],
+    exampleCases: [
+      'Evergreen Community Services (current - $12.4M estimated)',
+      'Valley Arts Foundation (current - $1.8M estimated)',
+      'U.S. v. Metro Youth Development ($7.8M recovery)',
+    ],
+    frequencyInData: 16,
+    category: 'Fund Management',
+  },
+  {
+    id: 'ft-007',
+    name: 'Ghost Employee / Payroll Fraud',
+    description: 'Adding fictitious employees to payroll or keeping terminated employees on payroll, with paychecks diverted to insiders.',
+    redFlags: [
+      'Employee count discrepancy between payroll and physical headcount',
+      'Employees with no facility access or IT login records',
+      'Shared bank accounts between employees',
+      'Employees with sequential Social Security numbers',
+      'No performance reviews or work products on file',
+    ],
+    controlFailures: [
+      'Payroll preparation and approval by same person',
+      'No independent headcount verification',
+      'No integration between HR, payroll, and access systems',
+      'Inadequate new hire documentation process',
+    ],
+    detectionMethods: [
+      'Payroll-to-headcount reconciliation',
+      'Access card and IT login analysis',
+      'Bank account sharing detection',
+      'Anomalous payroll pattern identification',
+    ],
+    exampleCases: [
+      'Pacific Shores Senior Living (current - $3.1M estimated)',
+      'Coastal Youth Athletic Association (current - $920K estimated)',
+      'State v. Eastside Community Center ($1.4M recovery)',
+    ],
+    frequencyInData: 8,
+    category: 'Payroll',
+  },
+  {
+    id: 'ft-008',
+    name: 'Related Party Transactions',
+    description: 'Financial transactions between the organization and parties with a pre-existing relationship (board members, executives, their family members) that are not disclosed or conducted at arm\'s length.',
+    redFlags: [
+      'Transactions with entities sharing addresses with insiders',
+      'Payments to entities formed by current or former insiders',
+      'Loan arrangements between org and board members',
+      'Real estate transactions with related parties',
+      'Above-market pricing for insider-provided services',
+    ],
+    controlFailures: [
+      'No related party transaction policy',
+      'Annual disclosure forms not comprehensive',
+      'No independent appraisal for significant transactions',
+      'Board override of related party policies',
+    ],
+    detectionMethods: [
+      'Entity-to-insider relationship mapping',
+      'Address matching and proximity analysis',
+      'Corporate registration cross-reference',
+      'Payment term comparison (insider vs. non-insider vendors)',
+    ],
+    exampleCases: [
+      'Cascade Community Alliance (current - $4.5M estimated)',
+      'U.S. ex rel. Davis v. Helping Hands Inc. ($9.2M recovery)',
+    ],
+    frequencyInData: 19,
+    category: 'Governance',
+  },
+  {
+    id: 'ft-009',
+    name: 'Grant Fund Commingling',
+    description: 'Failure to maintain separate accounting for grant funds, leading to restricted funds being mixed with unrestricted funds and potentially used for non-grant purposes.',
+    redFlags: [
+      'Single bank account for all fund types',
+      'Restricted fund balances not matching grant tracking',
+      'Interest earned on restricted funds not properly allocated',
+      'Fund transfers between restricted and unrestricted accounts',
+      'Delayed or inconsistent fund segregation',
+    ],
+    controlFailures: [
+      'No separate bank accounts for restricted funds',
+      'Inadequate fund accounting system',
+      'No regular reconciliation of restricted balances',
+      'Staff turnover in finance department',
+    ],
+    detectionMethods: [
+      'Bank account analysis for fund separation',
+      'Restricted fund balance reconciliation',
+      'Interest allocation tracking',
+      'Fund transfer pattern analysis',
+    ],
+    exampleCases: [
+      'Astoria Marine Research Center (flagged - $230K affected)',
+      'U.S. v. Pacific Community Alliance ($4.1M recovery)',
+    ],
+    frequencyInData: 11,
+    category: 'Fund Management',
+  },
+  {
+    id: 'ft-010',
+    name: 'Expense Misclassification',
+    description: 'Intentionally classifying expenses in wrong functional categories (typically reclassifying management or fundraising costs as program expenses) to artificially improve program expense ratios.',
+    redFlags: [
+      'Program expense ratio significantly above peer median',
+      'Sudden shifts in functional expense allocation',
+      'Gala/event costs classified as program expenses',
+      'Executive time allocation skewed toward program',
+      'Inconsistent classification methodology across periods',
+    ],
+    controlFailures: [
+      'No documented cost allocation methodology',
+      'Allocation decisions made by single individual',
+      'No independent review of functional classifications',
+      'Methodology changes not disclosed to board',
+    ],
+    detectionMethods: [
+      'Functional expense ratio anomaly detection',
+      'Year-over-year allocation shift analysis',
+      'Peer benchmarking of expense ratios',
+      'Event expense classification review',
+    ],
+    exampleCases: [
+      'Metro Education Trust (current - $2.2M estimated)',
+      'State AG v. Northwest Caring Foundation ($1.7M settlement)',
+    ],
+    frequencyInData: 14,
+    category: 'Financial Reporting',
+  },
+];
+
+export function getTypologyByCategory(category: string): FraudTypology[] {
+  return fraudTypologies.filter(ft => ft.category === category);
+}
+
+export function getTypologyById(id: string): FraudTypology | undefined {
+  return fraudTypologies.find(ft => ft.id === id);
+}
