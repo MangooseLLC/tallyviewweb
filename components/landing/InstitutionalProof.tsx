@@ -4,7 +4,7 @@ const items = [
   {
     icon: Building2,
     title: 'Deloitte + Avalanche',
-    description: 'Disaster relief disbursement tracking for FEMA — document authentication and streamlined reimbursement on an Avalanche subnet.',
+    description: 'Disaster relief disbursement tracking for FEMA: document authentication and streamlined reimbursement on an Avalanche subnet.',
   },
   {
     icon: Landmark,
@@ -19,7 +19,7 @@ const items = [
   {
     icon: FileCheck,
     title: 'U.S. Dept. of Commerce',
-    description: 'First federal agency to put economic statistical data on-chain — GDP data published to Avalanche (August 2025).',
+    description: 'First federal agency to put economic data on-chain. GDP data published to Avalanche (August 2025).',
   },
   {
     icon: MapPin,
@@ -31,7 +31,7 @@ const items = [
 export default function InstitutionalProof() {
   return (
     <section className="bg-slate-50">
-      <div className="mx-auto w-full max-w-6xl px-6 py-16">
+      <div className="mx-auto w-full max-w-6xl px-6 py-12">
         <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-navy">
           Institutional credibility
         </p>
@@ -39,11 +39,10 @@ export default function InstitutionalProof() {
           Built on infrastructure governments already trust
         </h2>
         <p className="mt-4 max-w-2xl text-base text-slate-600">
-          Tallyview is not pioneering government blockchain adoption — it&apos;s riding a wave
-          that&apos;s already breaking. Avalanche is already in production with federal, state, and
+          We are not the first. Avalanche is already in production with federal, state, and
           local government use cases.
         </p>
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {items.map(({ icon: Icon, title, description }) => (
             <div
               key={title}

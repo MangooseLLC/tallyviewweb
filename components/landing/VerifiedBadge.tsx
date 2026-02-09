@@ -2,8 +2,8 @@ import { Shield, ExternalLink } from 'lucide-react';
 
 export default function VerifiedBadge() {
   return (
-    <section className="bg-white">
-      <div className="mx-auto w-full max-w-6xl px-6 py-16">
+    <section className="border-t border-slate-200 bg-white">
+      <div className="mx-auto w-full max-w-6xl px-6 py-12">
         <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-navy">
           The Credential
         </p>
@@ -11,17 +11,16 @@ export default function VerifiedBadge() {
           Tallyview Verified
         </h2>
         <p className="mt-4 max-w-2xl text-base text-slate-600">
-          A cryptographically-backed credential attesting that your organization&apos;s financials
-          are being continuously monitored and verified. Grant applications reference it. Board
-          members cite it for D&amp;O liability. Donors verify it before contributing. Auditors use
-          it to reduce audit scope.
+          A credential that shows your organization&apos;s financials are monitored and verified
+          on an ongoing basis. Grant applications can reference it. Board members use it for
+          D&amp;O liability. Donors check it before giving. Auditors use it to narrow audit scope.
         </p>
-        <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_auto] lg:items-start">
+        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_auto] lg:items-start">
           <div className="space-y-6">
             <p className="text-sm text-slate-600">
-              When foundations start <em>requiring</em> Tallyview Verified in grant agreements,
-              nonprofit adoption grows — and the verification network expands. The credential has
-              real value because it lives on a shared, tamper-proof record anyone can verify.
+              When foundations start requiring Tallyview Verified in grant agreements, more
+              nonprofits sign up and the verification network grows. The credential is valuable
+              because it sits on a shared, tamper-proof record anyone can check.
             </p>
             <ul className="space-y-2 text-sm text-slate-600">
               <li className="flex items-start gap-2">
@@ -30,11 +29,11 @@ export default function VerifiedBadge() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-gold" />
-                Backed by continuous on-chain attestation
+                Backed by ongoing on-chain attestation
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-gold" />
-                No wallet or tokens required — the chain is invisible infrastructure
+                No wallet or tokens. You never interact with the chain directly.
               </li>
             </ul>
           </div>
@@ -43,7 +42,7 @@ export default function VerifiedBadge() {
               <Shield className="h-10 w-10 text-brand-gold" />
               <div>
                 <p className="font-semibold text-brand-navy">Tallyview Verified</p>
-                <p className="text-xs text-slate-500">Continuously attested</p>
+                <p className="text-xs text-slate-500">Ongoing attestation</p>
               </div>
             </div>
             <button

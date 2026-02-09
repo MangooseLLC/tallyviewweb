@@ -7,8 +7,8 @@ import PasswordGate from '@/components/shared/PasswordGate';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
-  title: 'Tallyview — The Accountability Layer for Public Money',
-  description: 'Tallyview connects to nonprofit accounting systems and provides real-time compliance automation and oversight intelligence for funders, regulators, and investigators.',
+  title: 'Tallyview | The Accountability Chain for Public Money',
+  description: 'Tallyview connects to nonprofit accounting systems and records every finding on a tamper-proof ledger. Real-time compliance for organizations and oversight for funders, regulators, and investigators.',
 };
 
 export default function RootLayout({

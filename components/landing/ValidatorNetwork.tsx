@@ -9,7 +9,7 @@ const participants = [
   {
     icon: Building2,
     label: 'Foundations',
-    description: 'Run validator nodes for direct infrastructure participation',
+    description: 'Run validator nodes and participate in the network',
   },
   {
     icon: Scale,
@@ -26,7 +26,7 @@ const participants = [
 export default function ValidatorNetwork() {
   return (
     <section className="bg-white">
-      <div className="mx-auto w-full max-w-6xl px-6 py-16">
+      <div className="mx-auto w-full max-w-6xl px-6 py-12">
         <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-navy">
           Shared infrastructure
         </p>
@@ -34,11 +34,10 @@ export default function ValidatorNetwork() {
           The validator network
         </h2>
         <p className="mt-4 max-w-2xl text-base text-slate-600">
-          This is shared accountability infrastructure, not one company&apos;s database. Stakeholders
-          participate in the chain itself — foundations, regulators, and audit firms can run
-          validator nodes alongside Tallyview.
+          Shared accountability infrastructure, not one company&apos;s database. Foundations,
+          regulators, and audit firms can run validator nodes alongside Tallyview.
         </p>
-        <div className="mt-10 flex flex-wrap justify-center gap-6">
+        <div className="mt-6 flex flex-wrap justify-center gap-5">
           {participants.map(({ icon: Icon, label, description }) => (
             <div
               key={label}

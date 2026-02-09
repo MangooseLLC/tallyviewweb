@@ -22,7 +22,7 @@ export default function Home() {
     <div className="min-h-screen bg-white text-slate-900">
       <section className="relative overflow-hidden bg-gradient-to-br from-brand-navy via-brand-navy to-brand-navy-light text-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(245,186,66,0.16),_transparent_45%)]" />
-        <div className="relative mx-auto flex w-full max-w-6xl flex-col px-6 pb-20 pt-8">
+        <div className="relative mx-auto flex w-full max-w-6xl flex-col px-6 pb-16 pt-8">
           <nav className="flex items-center justify-between">
             <Link href="/" className="inline-flex items-center gap-3">
               <Image
@@ -43,7 +43,7 @@ export default function Home() {
             </Link>
           </nav>
 
-          <div className="mt-16 grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+          <div className="mt-12 grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-gold">
                 Accountability Intelligence
@@ -55,8 +55,8 @@ export default function Home() {
               <p className="mt-5 max-w-xl text-base text-slate-200 md:text-lg">
                 Tallyview connects to the accounting systems nonprofits already
                 use. It monitors transactions in real time, flags anomalies, and
-                anchors every finding to a tamper-proof record that nonprofits,
-                funders, regulators, and investigators can independently verify.
+                records every finding on a tamper-proof ledger that nonprofits,
+                funders, regulators, and investigators can verify for themselves.
               </p>
               <div className="mt-8 max-w-xl">
                 <WaitlistForm buttonLabel="Join waitlist" />
@@ -81,7 +81,7 @@ export default function Home() {
                 </div>
                 <div className="flex items-start gap-3">
                   <Lock className="mt-0.5 h-4 w-4 shrink-0 text-brand-gold" />
-                  <p>Every attestation is anchored to an immutable chain. No one can alter the record — not even the organization itself.</p>
+                  <p>Every attestation is written to an immutable chain. No one can change the record, not even the organization.</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <LineChart className="mt-0.5 h-4 w-4 shrink-0 text-brand-gold" />
@@ -101,38 +101,39 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-6xl px-6 py-16">
-        <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-navy">
-              The Platform
-            </p>
-            <h2 className="mt-4 text-3xl font-semibold text-brand-navy">
-              Real-time accountability for public money
-            </h2>
-            <p className="mt-4 text-base text-slate-600">
-              Tallyview connects to the accounting systems nonprofits already use
-              and turns financial activity into real-time oversight data. That
-              data flows through our intelligence layer — then cryptographic
-              commitments are anchored on the Tallyview Accountability Chain so
-              every outcome is verifiable.
-            </p>
+      <section className="bg-slate-50">
+        <div className="mx-auto w-full max-w-6xl px-6 py-12">
+          <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-navy">
+                The Platform
+              </p>
+              <h2 className="mt-3 text-2xl font-semibold text-brand-navy md:text-3xl">
+                Real-time accountability for public money
+              </h2>
+              <p className="mt-3 text-base text-slate-600">
+                Tallyview connects to the accounting systems nonprofits already use
+                and turns financial activity into real-time oversight data. We run
+                it through our intelligence layer, then record commitments on the
+                Tallyview Accountability Chain so anyone can verify the results.
+              </p>
+            </div>
+            <ArchitectureDiagram />
           </div>
-          <ArchitectureDiagram />
         </div>
       </section>
 
       <VerifiedBadge />
 
       <section className="bg-slate-50">
-        <div className="mx-auto w-full max-w-6xl px-6 py-16">
+        <div className="mx-auto w-full max-w-6xl px-6 py-12">
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-navy">
             Who We Serve
           </p>
-          <h2 className="mt-4 text-3xl font-semibold text-brand-navy">
+          <h2 className="mt-3 text-2xl font-semibold text-brand-navy md:text-3xl">
             Built for nonprofits and the people who oversee them.
           </h2>
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-3xl border border-brand-navy/10 bg-white p-6 shadow-sm">
               <div className="flex items-center gap-3">
                 <div className="rounded-2xl bg-brand-navy/10 p-2 text-brand-navy">
@@ -145,7 +146,7 @@ export default function Home() {
                 <li>Board-ready financials and audit prep</li>
                 <li>Anomaly detection on vendor payments and allocation errors</li>
                 <li>Restricted fund tracking with real-time compliance</li>
-                <li className="font-medium text-brand-navy">Earn a Tallyview Verified credential backed by continuous on-chain attestation</li>
+                <li className="font-medium text-brand-navy">Earn a Tallyview Verified credential backed by ongoing on-chain attestation</li>
               </ul>
             </div>
             <div className="rounded-3xl border border-brand-gold/30 bg-brand-gold/10 p-6 shadow-sm">
@@ -159,7 +160,7 @@ export default function Home() {
                 <li>Real-time financial visibility across grantees</li>
                 <li>Risk scores, anomaly alerts, peer benchmarking</li>
                 <li>Cross-org entity resolution and fraud pattern detection</li>
-                <li className="font-medium text-brand-navy">Protocol-level grantee compliance — smart contract grant agreements that enforce reporting automatically</li>
+                <li className="font-medium text-brand-navy">Grant agreements as smart contracts that enforce reporting automatically</li>
               </ul>
             </div>
             <div className="rounded-3xl border border-brand-navy/10 bg-white p-6 shadow-sm">
@@ -173,7 +174,7 @@ export default function Home() {
                 <li>Jurisdiction dashboard and risk map</li>
                 <li>Investigation queue and entity analysis</li>
                 <li>Reports and triage tools</li>
-                <li className="font-medium text-brand-navy">Cross-jurisdictional oversight — query board member and vendor relationships across state lines through a shared verification layer</li>
+                <li className="font-medium text-brand-navy">Query board members and vendors across state lines on a shared verification layer</li>
               </ul>
             </div>
             <div className="rounded-3xl border border-brand-avalanche/20 bg-brand-avalanche/5 p-6 shadow-sm">
@@ -187,21 +188,22 @@ export default function Home() {
                 <li>Investigation workbench and fraud typologies</li>
                 <li>Active cases and exportable briefs</li>
                 <li>Full audit trails</li>
-                <li className="font-medium text-brand-navy">Cryptographic chain-of-custody — every anomaly and evidence finding timestamped on an immutable record</li>
+                <li className="font-medium text-brand-navy">Every anomaly and evidence finding timestamped on an immutable record</li>
               </ul>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-6xl px-6 py-16">
-        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-navy">
-          How It Works
-        </p>
-        <h2 className="mt-4 text-3xl font-semibold text-brand-navy">
-          Connect. Detect. Verify. Surface.
-        </h2>
-        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="bg-white">
+        <div className="mx-auto w-full max-w-6xl px-6 py-12">
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-navy">
+            How It Works
+          </p>
+          <h2 className="mt-3 text-2xl font-semibold text-brand-navy md:text-3xl">
+            Connect. Detect. Verify. Surface.
+          </h2>
+          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="rounded-2xl bg-brand-navy/10 p-2 text-brand-navy">
@@ -237,9 +239,9 @@ export default function Home() {
             </div>
             <h3 className="mt-4 text-lg font-semibold text-brand-navy">Verify</h3>
             <p className="mt-3 text-sm text-slate-600">
-              Every finding — transaction classifications, anomaly flags, compliance states — is
-              cryptographically committed to the Tallyview Accountability Chain. The record is
-              immutable. No one can alter it after the fact.
+              Transaction classifications, anomaly flags, and compliance states are
+              recorded on the Tallyview Accountability Chain. The record cannot be
+              changed after the fact.
             </p>
           </div>
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -255,6 +257,7 @@ export default function Home() {
               oversight reports instead of waiting for annual filings.
             </p>
           </div>
+          </div>
         </div>
       </section>
 
@@ -262,20 +265,20 @@ export default function Home() {
       <ValidatorNetwork />
 
       <footer className="bg-brand-navy text-white">
-        <div className="mx-auto w-full max-w-6xl px-6 py-16">
+        <div className="mx-auto w-full max-w-6xl px-6 py-12">
           <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div>
               <h3 className="text-2xl font-semibold">
                 Request early access.
               </h3>
               <p className="mt-3 text-sm text-slate-300">
-                We are onboarding early users now. Tell us your role and leave your email — we will
+                We are onboarding early users now. Share your role and email and we will
                 follow up with demo access and timing.
               </p>
             </div>
             <WaitlistForm buttonLabel="Get early access" showRoleSelector />
           </div>
-          <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-slate-400 md:flex-row">
+          <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-slate-400 md:flex-row">
             <p>Tallyview &copy; 2026</p>
             <Link href="/case-files" className="hover:text-brand-gold">
               Tallyview Case Files
