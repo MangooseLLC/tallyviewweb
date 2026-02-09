@@ -15,7 +15,7 @@ export default function VerifiedBadge() {
           on an ongoing basis. Grant applications can reference it. Board members use it for
           D&amp;O liability. Donors check it before giving. Auditors use it to narrow audit scope.
         </p>
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_auto] lg:items-start">
+        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
           <div className="space-y-6">
             <p className="text-sm text-slate-600">
               When foundations start requiring Tallyview Verified in grant agreements, more
