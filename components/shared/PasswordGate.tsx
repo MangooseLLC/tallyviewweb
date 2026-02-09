@@ -2,8 +2,9 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Lock, Eye, EyeOff, AlertCircle, FileText } from 'lucide-react';
 
 const SESSION_KEY = 'tallyview_site_unlocked';
 
@@ -150,9 +151,16 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
       </div>
 
       {/* Footer */}
-      <p className="mt-12 text-xs text-gray-600">
-        Tallyview &copy; 2026
-      </p>
+      <div className="mt-12 flex flex-col items-center gap-2 text-xs text-gray-600">
+        <Link
+          href="/case-files"
+          className="inline-flex items-center gap-2 text-xs font-semibold text-brand-gold hover:text-brand-gold-light"
+        >
+          <FileText className="h-3.5 w-3.5" />
+          Tallyview Case Files
+        </Link>
+        <p>Tallyview &copy; 2026</p>
+      </div>
     </div>
   );
 }
