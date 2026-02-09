@@ -79,8 +79,7 @@ export default function Home() {
               </div>
               <div className="mt-6 rounded-2xl border border-white/10 bg-brand-navy/60 p-4">
                 <p className="text-xs text-slate-300">
-                  The progressive 990 is not the product. It is the distribution
-                  strategy for the accountability layer.
+                  A single data pipeline powers compliance automation and oversight intelligence.
                 </p>
               </div>
             </div>
@@ -92,16 +91,16 @@ export default function Home() {
         <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-navy">
-              The Thesis
+              What Tallyview Does
             </p>
             <h2 className="mt-4 text-3xl font-semibold text-brand-navy">
-              Plaid for nonprofit accountability
+              Real-time accountability for public money
             </h2>
             <p className="mt-4 text-base text-slate-600">
-              Plaid does not compete with banks. It sits on top of whatever bank
-              you use and creates a data layer that powers entirely different
-              products. Tallyview does the same for nonprofit accounting systems
-              to create a real-time accountability intelligence layer.
+              Tallyview connects to the accounting systems nonprofits already use,
+              then turns everyday financial activity into clear, real-time oversight
+              intelligence. That means easier compliance for organizations and
+              better visibility for funders, regulators, and the public.
             </p>
           </div>
 
