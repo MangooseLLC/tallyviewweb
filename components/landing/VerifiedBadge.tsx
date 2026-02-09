@@ -4,19 +4,19 @@ export default function VerifiedBadge() {
   return (
     <section className="border-t border-slate-200 bg-white">
       <div className="mx-auto w-full max-w-6xl px-6 py-12">
-        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-navy">
-          The Credential
-        </p>
-        <h2 className="mt-4 text-3xl font-semibold text-brand-navy">
-          Tallyview Verified
-        </h2>
-        <p className="mt-4 max-w-2xl text-base text-slate-600">
-          A credential that shows your organization&apos;s financials are monitored and verified
-          on an ongoing basis. Grant applications can reference it. Board members use it for
-          D&amp;O liability. Donors check it before giving. Auditors use it to narrow audit scope.
-        </p>
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
-          <div className="space-y-6">
+        <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div className="space-y-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-navy">
+              The Credential
+            </p>
+            <h2 className="text-3xl font-semibold text-brand-navy">
+              Tallyview Verified
+            </h2>
+            <p className="max-w-2xl text-base text-slate-600">
+              A credential that shows your organization&apos;s financials are monitored and verified
+              on an ongoing basis. Grant applications can reference it. Board members use it for
+              D&amp;O liability. Donors check it before giving. Auditors use it to narrow audit scope.
+            </p>
             <p className="text-sm text-slate-600">
               When foundations start requiring Tallyview Verified in grant agreements, more
               nonprofits sign up and the verification network grows. The credential is valuable
@@ -37,7 +37,7 @@ export default function VerifiedBadge() {
               </li>
             </ul>
           </div>
-          <div className="flex flex-col items-center rounded-3xl border border-brand-gold/30 bg-brand-gold/10 p-8">
+          <div className="flex flex-col items-center rounded-3xl border border-brand-gold/30 bg-brand-gold/10 p-8 shrink-0">
             <div className="flex items-center gap-3 rounded-2xl border border-brand-gold/40 bg-white px-6 py-4 shadow-sm">
               <Shield className="h-10 w-10 text-brand-gold" />
               <div>
