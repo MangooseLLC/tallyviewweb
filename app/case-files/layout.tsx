@@ -16,7 +16,7 @@ export default function CaseFilesLayout({
     <div className="min-h-screen bg-brand-navy text-white">
       <header className="border-b border-white/10">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-6">
-          <Link href="/login" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3">
             <Image
               src="/tallyview-logo.svg"
               alt="Tallyview"

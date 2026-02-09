@@ -45,7 +45,7 @@ export default function LoginPage() {
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-12">
         {/* Logo & Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-3 mb-6">
+          <Link href="/" className="inline-flex items-center gap-3 mb-6">
             <Image
               src="/tallyview-logo.svg"
               alt="Tallyview"
@@ -54,7 +54,7 @@ export default function LoginPage() {
               className="h-14 w-auto brightness-0 invert"
               priority
             />
-          </div>
+          </Link>
           <h1 className="text-2xl md:text-3xl font-bold text-white max-w-2xl mx-auto leading-tight">
             The Accountability Intelligence Layer<br />
             <span className="text-brand-gold">

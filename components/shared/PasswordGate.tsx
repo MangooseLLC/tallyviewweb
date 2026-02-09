@@ -85,14 +85,16 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Image
-            src="/tallyview-logo.svg"
-            alt="Tallyview"
-            width={220}
-            height={62}
-            className="h-12 w-auto brightness-0 invert mx-auto mb-6"
-            priority
-          />
+          <Link href="/">
+            <Image
+              src="/tallyview-logo.svg"
+              alt="Tallyview"
+              width={220}
+              height={62}
+              className="h-12 w-auto brightness-0 invert mx-auto mb-6"
+              priority
+            />
+          </Link>
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 mb-4">
             <Lock className="h-3.5 w-3.5 text-brand-gold" />
             <span className="text-xs text-gray-400 font-medium">Protected Access</span>

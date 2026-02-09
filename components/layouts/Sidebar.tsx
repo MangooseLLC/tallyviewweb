@@ -56,14 +56,16 @@ export function Sidebar() {
       {/* Logo */}
       <div className="flex h-14 items-center justify-between px-4 border-b border-white/10">
         {!collapsed && (
-          <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <TallyviewIcon className="h-5 w-5 text-brand-gold" />
             <div className="h-5 w-px bg-white/20" />
             <span className="font-semibold text-sm text-white">Tallyview</span>
-          </div>
+          </Link>
         )}
         {collapsed && (
-          <TallyviewIcon className="h-5 w-5 text-brand-gold mx-auto" />
+          <Link href="/">
+            <TallyviewIcon className="h-5 w-5 text-brand-gold mx-auto" />
+          </Link>
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
