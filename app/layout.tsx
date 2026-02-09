@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
   title: 'Tallyview — The Accountability Layer for Public Money',
-  description: 'Real-time compliance automation and oversight intelligence for the nonprofit sector. Tallyview integrates with existing accounting systems to deliver continuous accountability for every public dollar.',
+  description: 'Tallyview connects to nonprofit accounting systems and provides real-time compliance automation and oversight intelligence for funders, regulators, and investigators.',
 };
 
 export default function RootLayout({
