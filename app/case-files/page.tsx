@@ -28,6 +28,7 @@ export default function CaseFilesPage() {
           >
             <div className="space-y-4">
               <div className="flex items-center justify-between text-xs text-gray-400">
+                <span className="font-semibold text-brand-gold">{caseFile.caseNumber}</span>
                 <span>{caseFile.location}</span>
               </div>
               <div>

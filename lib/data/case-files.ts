@@ -36,6 +36,7 @@ export type CaseFileCommentary = {
 };
 
 export type CaseFile = {
+  caseNumber: string;
   slug: string;
   title: string;
   category: string;
@@ -54,6 +55,7 @@ export type CaseFile = {
 
 export const caseFiles: CaseFile[] = [
   {
+    caseNumber: '#0001',
     slug: 'jackson-health-foundation-florida-kickbacks-false-invoices',
     title: 'Tallyview Case File — Jackson Health Foundation (Florida): Kickbacks + false invoices',
     category: 'Nonprofit',

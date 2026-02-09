@@ -51,7 +51,8 @@ export default function CaseFilePage({ params }: CaseFilePageProps) {
         </Link>
 
         <div className="space-y-3">
-          <div className="flex flex-wrap items-center gap-2 text-xs text-gray-400">
+          <div className="flex flex-wrap items-center gap-3 text-xs text-gray-400">
+            <span className="font-semibold text-brand-gold">{caseFile.caseNumber}</span>
             <span className="inline-flex items-center gap-1">
               <MapPin className="h-3.5 w-3.5" />
               {caseFile.location}
