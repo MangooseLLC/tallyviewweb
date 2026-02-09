@@ -1,5 +1,6 @@
 export type CaseFileSource = {
   label: string;
+  url: string;
   detail?: string;
 };
 
@@ -159,20 +160,21 @@ export const caseFiles: CaseFile[] = [
     sources: [
       {
         label: 'DOJ (S.D. Florida) — guilty plea press release (Sept 15, 2025)',
+        url: 'https://www.justice.gov/usao-sdfl/pr/jackson-health-foundation-executive-pleads-guilty-taking-kickbacks-stealing-foundation',
       },
       {
         label: 'DOJ (S.D. Florida) — indictment press release (May 21, 2025)',
+        url: 'https://www.justice.gov/usao-sdfl/pr/jackson-health-foundation-executive-charged-pocketing-over-1-million-kickbacks',
       },
       {
         label: 'CBS Miami — sentencing coverage (Dec 10, 2025)',
+        url: 'https://www.cbsnews.com/miami/news/charmaine-gatlin-former-coo-jackson-memorial-hospital-charity-arm-embezzlement-sentencing/',
       },
       {
         label: 'Florida Politics — summary coverage (Sept 2025)',
+        url: 'https://floridapolitics.com/archives/756349-former-jackson-health-foundation-executive-pleads-guilty-to-4-3m-embezzlement-scheme/',
       },
     ],
-    commentary: {
-      xThread: 'PASTE YOUR PERSONAL X THREAD LINK',
-      linkedIn: 'PASTE YOUR PERSONAL LINKEDIN POST LINK',
-    },
+    commentary: {},
   },
 ];

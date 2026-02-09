@@ -28,9 +28,6 @@ export default function CaseFilesPage() {
           >
             <div className="space-y-4">
               <div className="flex items-center justify-between text-xs text-gray-400">
-                <span className="rounded-full border border-white/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-brand-gold">
-                  {caseFile.category}
-                </span>
                 <span>{caseFile.location}</span>
               </div>
               <div>

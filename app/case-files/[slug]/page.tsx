@@ -5,8 +5,6 @@ import {
   BadgeCheck,
   Building2,
   ClipboardCheck,
-  FileText,
-  Gavel,
   MapPin,
   Scale,
   Shield,
@@ -54,10 +52,6 @@ export default function CaseFilePage({ params }: CaseFilePageProps) {
 
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-2 text-xs text-gray-400">
-            <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-brand-gold">
-              <FileText className="h-3.5 w-3.5" />
-              {caseFile.category}
-            </span>
             <span className="inline-flex items-center gap-1">
               <MapPin className="h-3.5 w-3.5" />
               {caseFile.location}
@@ -211,14 +205,21 @@ export default function CaseFilePage({ params }: CaseFilePageProps) {
           {caseFile.sources.map((source) => (
             <li key={source.label} className="flex items-start gap-2">
               <BadgeCheck className="mt-0.5 h-4 w-4 text-brand-gold" />
-              <span>{source.label}</span>
+              <a
+                className="text-brand-gold hover:underline"
+                href={source.url}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {source.label}
+              </a>
             </li>
           ))}
         </ul>
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold text-white">Commentary by Khori</h2>
+        <h2 className="text-xl font-semibold text-white">Commentary</h2>
         <ul className="space-y-2">
           {renderCommentaryLink('X thread:', caseFile.commentary.xThread)}
           {renderCommentaryLink('LinkedIn post:', caseFile.commentary.linkedIn)}
