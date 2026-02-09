@@ -49,6 +49,7 @@ const config: Config = {
           'gold-light': '#f8cc6e',
           'gold-dark': '#d9a235',
           'navy-light': '#0a3060',
+          avalanche: '#E84142',
         },
         risk: {
           high: '#EF4444',

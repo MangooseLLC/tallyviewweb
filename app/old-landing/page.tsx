@@ -8,16 +8,10 @@ import {
   LineChart,
   Link2,
   Radar,
-  Lock,
-  Search,
 } from 'lucide-react';
 import WaitlistForm from '@/components/landing/WaitlistForm';
-import ArchitectureDiagram from '@/components/landing/ArchitectureDiagram';
-import VerifiedBadge from '@/components/landing/VerifiedBadge';
-import InstitutionalProof from '@/components/landing/InstitutionalProof';
-import ValidatorNetwork from '@/components/landing/ValidatorNetwork';
 
-export default function Home() {
+export default function OldLanding() {
   return (
     <div className="min-h-screen bg-white text-slate-900">
       <section className="relative overflow-hidden bg-gradient-to-br from-brand-navy via-brand-navy to-brand-navy-light text-white">
@@ -49,14 +43,14 @@ export default function Home() {
                 Accountability Intelligence
               </p>
               <h1 className="mt-5 text-4xl font-semibold leading-tight md:text-5xl">
-                The Accountability Chain
+                The Accountability Layer
                 <span className="block text-brand-gold">for Public Money</span>
               </h1>
               <p className="mt-5 max-w-xl text-base text-slate-200 md:text-lg">
                 Tallyview connects to the accounting systems nonprofits already
                 use. It monitors transactions in real time, flags anomalies, and
-                anchors every finding to a tamper-proof record that nonprofits,
-                funders, regulators, and investigators can independently verify.
+                gives funders, regulators, and investigators the visibility they
+                need.
               </p>
               <div className="mt-8 max-w-xl">
                 <WaitlistForm buttonLabel="Join waitlist" />
@@ -72,19 +66,15 @@ export default function Home() {
               </p>
               <div className="mt-4 space-y-4 text-sm text-slate-200">
                 <div className="flex items-start gap-3">
-                  <Link2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-gold" />
+                  <Link2 className="mt-0.5 h-4 w-4 text-brand-gold" />
                   <p>Integrates with QuickBooks, Xero, Sage Intacct, NetSuite, and 20+ accounting systems.</p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <Radar className="mt-0.5 h-4 w-4 shrink-0 text-brand-gold" />
+                  <Radar className="mt-0.5 h-4 w-4 text-brand-gold" />
                   <p>Classifies transactions into 990 categories and flags anomalies in real time.</p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <Lock className="mt-0.5 h-4 w-4 shrink-0 text-brand-gold" />
-                  <p>Every attestation is anchored to an immutable chain. No one can alter the record — not even the organization itself.</p>
-                </div>
-                <div className="flex items-start gap-3">
-                  <LineChart className="mt-0.5 h-4 w-4 shrink-0 text-brand-gold" />
+                  <LineChart className="mt-0.5 h-4 w-4 text-brand-gold" />
                   <p>Delivers real-time portfolio intelligence to funders, regulators, and investigators.</p>
                 </div>
               </div>
@@ -93,9 +83,6 @@ export default function Home() {
                   One integration. Compliance automation for organizations, real-time oversight for everyone else.
                 </p>
               </div>
-              <p className="mt-4 text-center text-[10px] uppercase tracking-wider text-slate-400">
-                Powered by Avalanche
-              </p>
             </div>
           </div>
         </div>
@@ -113,16 +100,45 @@ export default function Home() {
             <p className="mt-4 text-base text-slate-600">
               Tallyview connects to the accounting systems nonprofits already use
               and turns financial activity into real-time oversight data. That
-              data flows through our intelligence layer — then cryptographic
-              commitments are anchored on the Tallyview Accountability Chain so
-              every outcome is verifiable.
+              means less compliance work for organizations and better visibility
+              for funders, regulators, and the public.
             </p>
           </div>
-          <ArchitectureDiagram />
+
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-col gap-3">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm font-medium text-slate-700">
+                Accounting Systems
+                <p className="mt-2 text-xs text-slate-500">
+                  QuickBooks, Xero, Sage Intacct, NetSuite, and 20+ others
+                </p>
+              </div>
+              <div className="flex items-center gap-3 text-xs text-slate-500">
+                <div className="h-px flex-1 bg-slate-200" />
+                Data Layer
+                <div className="h-px flex-1 bg-slate-200" />
+              </div>
+              <div className="rounded-2xl border border-brand-gold/40 bg-brand-gold/10 p-4 text-sm font-semibold text-brand-navy">
+                Tallyview Intelligence Layer
+                <p className="mt-2 text-xs font-normal text-slate-600">
+                  Continuous mapping, anomaly detection, cross-org benchmarking
+                </p>
+              </div>
+              <div className="flex items-center gap-3 text-xs text-slate-500">
+                <div className="h-px flex-1 bg-slate-200" />
+                Accountability Outcomes
+                <div className="h-px flex-1 bg-slate-200" />
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm font-medium text-slate-700">
+                Oversight Intelligence
+                <p className="mt-2 text-xs text-slate-500">
+                  Foundation portfolio views, regulator triage, investigation workbench
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
-
-      <VerifiedBadge />
 
       <section className="bg-slate-50">
         <div className="mx-auto w-full max-w-6xl px-6 py-16">
@@ -132,20 +148,19 @@ export default function Home() {
           <h2 className="mt-4 text-3xl font-semibold text-brand-navy">
             Built for nonprofits and the people who oversee them.
           </h2>
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-8 grid gap-6 lg:grid-cols-2">
             <div className="rounded-3xl border border-brand-navy/10 bg-white p-6 shadow-sm">
               <div className="flex items-center gap-3">
                 <div className="rounded-2xl bg-brand-navy/10 p-2 text-brand-navy">
                   <Building2 className="h-5 w-5" />
                 </div>
-                <h3 className="text-lg font-semibold text-brand-navy">Nonprofits</h3>
+                <h3 className="text-lg font-semibold text-brand-navy">For Nonprofits</h3>
               </div>
               <ul className="mt-4 space-y-3 text-sm text-slate-600">
-                <li>Progressive 990 that builds throughout the year</li>
-                <li>Board-ready financials and audit prep</li>
-                <li>Anomaly detection on vendor payments and allocation errors</li>
-                <li>Restricted fund tracking with real-time compliance</li>
-                <li className="font-medium text-brand-navy">Earn a Tallyview Verified credential backed by continuous on-chain attestation</li>
+                <li>Progressive 990 that builds throughout the year, not at the last minute</li>
+                <li>Automatic board-ready financials and audit prep packages</li>
+                <li>Anomaly detection on vendor payments, expense drift, and allocation errors</li>
+                <li>Restricted fund tracking with real-time compliance monitoring</li>
               </ul>
             </div>
             <div className="rounded-3xl border border-brand-gold/30 bg-brand-gold/10 p-6 shadow-sm">
@@ -153,41 +168,15 @@ export default function Home() {
                 <div className="rounded-2xl bg-brand-gold/30 p-2 text-brand-navy">
                   <ShieldCheck className="h-5 w-5" />
                 </div>
-                <h3 className="text-lg font-semibold text-brand-navy">Foundations</h3>
+                <h3 className="text-lg font-semibold text-brand-navy">
+                  For Oversight Stakeholders
+                </h3>
               </div>
               <ul className="mt-4 space-y-3 text-sm text-slate-600">
-                <li>Real-time financial visibility across grantees</li>
-                <li>Risk scores, anomaly alerts, peer benchmarking</li>
-                <li>Cross-org entity resolution and fraud pattern detection</li>
-                <li className="font-medium text-brand-navy">Protocol-level grantee compliance — smart contract grant agreements that enforce reporting automatically</li>
-              </ul>
-            </div>
-            <div className="rounded-3xl border border-brand-navy/10 bg-white p-6 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="rounded-2xl bg-brand-navy/10 p-2 text-brand-navy">
-                  <Scale className="h-5 w-5" />
-                </div>
-                <h3 className="text-lg font-semibold text-brand-navy">Regulators</h3>
-              </div>
-              <ul className="mt-4 space-y-3 text-sm text-slate-600">
-                <li>Jurisdiction dashboard and risk map</li>
-                <li>Investigation queue and entity analysis</li>
-                <li>Reports and triage tools</li>
-                <li className="font-medium text-brand-navy">Cross-jurisdictional oversight — query board member and vendor relationships across state lines through a shared verification layer</li>
-              </ul>
-            </div>
-            <div className="rounded-3xl border border-brand-avalanche/20 bg-brand-avalanche/5 p-6 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="rounded-2xl bg-brand-avalanche/20 p-2 text-brand-avalanche">
-                  <Search className="h-5 w-5" />
-                </div>
-                <h3 className="text-lg font-semibold text-brand-navy">Investigators</h3>
-              </div>
-              <ul className="mt-4 space-y-3 text-sm text-slate-600">
-                <li>Investigation workbench and fraud typologies</li>
-                <li>Active cases and exportable briefs</li>
-                <li>Full audit trails</li>
-                <li className="font-medium text-brand-navy">Cryptographic chain-of-custody — every anomaly and evidence finding timestamped on an immutable record</li>
+                <li>Real-time financial visibility across all connected grantees</li>
+                <li>Risk scores, anomaly alerts, and peer benchmarking across the portfolio</li>
+                <li>Cross-organization entity resolution and fraud pattern detection</li>
+                <li>Investigation workbench with exportable briefs and full audit trails</li>
               </ul>
             </div>
           </div>
@@ -199,9 +188,9 @@ export default function Home() {
           How It Works
         </p>
         <h2 className="mt-4 text-3xl font-semibold text-brand-navy">
-          Connect. Detect. Verify. Surface.
+          Connect. Detect. Surface.
         </h2>
-        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid gap-6 lg:grid-cols-3">
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="rounded-2xl bg-brand-navy/10 p-2 text-brand-navy">
@@ -228,26 +217,12 @@ export default function Home() {
               against peers, and screened for anomalies across the network.
             </p>
           </div>
-          <div className="rounded-3xl border border-brand-avalanche/30 bg-brand-avalanche/5 p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div className="rounded-2xl bg-brand-avalanche/20 p-2 text-brand-avalanche">
-                <Lock className="h-5 w-5" />
-              </div>
-              <span className="text-xs font-semibold text-slate-400">03</span>
-            </div>
-            <h3 className="mt-4 text-lg font-semibold text-brand-navy">Verify</h3>
-            <p className="mt-3 text-sm text-slate-600">
-              Every finding — transaction classifications, anomaly flags, compliance states — is
-              cryptographically committed to the Tallyview Accountability Chain. The record is
-              immutable. No one can alter it after the fact.
-            </p>
-          </div>
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="rounded-2xl bg-brand-navy/10 p-2 text-brand-navy">
                 <Scale className="h-5 w-5" />
               </div>
-              <span className="text-xs font-semibold text-slate-400">04</span>
+              <span className="text-xs font-semibold text-slate-400">03</span>
             </div>
             <h3 className="mt-4 text-lg font-semibold text-brand-navy">Surface</h3>
             <p className="mt-3 text-sm text-slate-600">
@@ -258,9 +233,6 @@ export default function Home() {
         </div>
       </section>
 
-      <InstitutionalProof />
-      <ValidatorNetwork />
-
       <footer className="bg-brand-navy text-white">
         <div className="mx-auto w-full max-w-6xl px-6 py-16">
           <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
@@ -269,19 +241,16 @@ export default function Home() {
                 Request early access.
               </h3>
               <p className="mt-3 text-sm text-slate-300">
-                We are onboarding early users now. Tell us your role and leave your email — we will
+                We are onboarding early users now. Leave your email and we will
                 follow up with demo access and timing.
               </p>
             </div>
-            <WaitlistForm buttonLabel="Get early access" showRoleSelector />
+            <WaitlistForm buttonLabel="Get early access" />
           </div>
           <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-slate-400 md:flex-row">
             <p>Tallyview &copy; 2026</p>
             <Link href="/case-files" className="hover:text-brand-gold">
               Tallyview Case Files
-            </Link>
-            <Link href="/old-landing" className="hover:text-brand-gold">
-              Original landing
             </Link>
           </div>
         </div>
