@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { personas } from '@/lib/data/personas';
 import { PersonaRole } from '@/lib/types';
@@ -10,6 +11,7 @@ import {
   Shield,
   Scale,
   ArrowRight,
+  FileText,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
@@ -99,7 +101,14 @@ export default function LoginPage() {
       </div>
 
       {/* Footer */}
-      <footer className="py-4 text-center">
+      <footer className="py-4 text-center space-y-2">
+        <Link
+          href="/case-files"
+          className="inline-flex items-center gap-2 text-xs font-semibold text-brand-gold hover:text-brand-gold-light"
+        >
+          <FileText className="h-3.5 w-3.5" />
+          Tallyview Case Files
+        </Link>
         <p className="text-xs text-gray-500">
           Demo environment with synthetic data &bull; Tallyview &copy; 2026
         </p>

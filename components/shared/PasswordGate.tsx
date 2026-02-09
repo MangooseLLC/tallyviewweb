@@ -2,6 +2,7 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 const SESSION_KEY = 'tallyview_site_unlocked';
@@ -13,6 +14,8 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const pathname = usePathname();
+  const isPublicCaseFiles = pathname.startsWith('/case-files');
 
   // Check sessionStorage on mount
   useEffect(() => {
@@ -58,6 +61,10 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
       setSubmitting(false);
     }
   };
+
+  if (isPublicCaseFiles) {
+    return <>{children}</>;
+  }
 
   // Show nothing while checking session
   if (loading) {
