@@ -38,7 +38,7 @@ export default function WaitlistForm({
       }
 
       setStatus('success');
-      setMessage('Thanks — you are on the list.');
+      setMessage('You are on the list. We will be in touch.');
       setEmail('');
     } catch {
       setStatus('error');

@@ -43,43 +43,44 @@ export default function Home() {
                 Accountability Intelligence
               </p>
               <h1 className="mt-5 text-4xl font-semibold leading-tight md:text-5xl">
-                The Accountability Intelligence Layer
+                The Accountability Layer
                 <span className="block text-brand-gold">for Public Money</span>
               </h1>
               <p className="mt-5 max-w-xl text-base text-slate-200 md:text-lg">
-                Tallyview sits on top of existing nonprofit accounting systems to
-                deliver real-time compliance automation and cross-organization
-                oversight intelligence.
+                Tallyview integrates with the accounting systems nonprofits already
+                use — then continuously monitors transactions, flags anomalies, and
+                delivers oversight intelligence to the stakeholders who fund,
+                regulate, and investigate the sector.
               </p>
               <div className="mt-8 max-w-xl">
                 <WaitlistForm buttonLabel="Join waitlist" />
                 <p className="mt-4 text-xs text-slate-300">
-                  Early access for nonprofits, foundations, regulators, and investigators.
+                  Early access for nonprofits, foundations, regulators, and forensic investigators.
                 </p>
               </div>
             </div>
 
             <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
               <p className="text-xs font-semibold uppercase tracking-wide text-brand-gold">
-                Pipeline Overview
+                How It Works
               </p>
               <div className="mt-4 space-y-4 text-sm text-slate-200">
                 <div className="flex items-start gap-3">
                   <Link2 className="mt-0.5 h-4 w-4 text-brand-gold" />
-                  <p>Connects to QuickBooks, Xero, Sage Intacct, NetSuite, and 20+ others.</p>
+                  <p>Integrates with QuickBooks, Xero, Sage Intacct, NetSuite, and 20+ accounting systems.</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <Radar className="mt-0.5 h-4 w-4 text-brand-gold" />
-                  <p>Continuously maps transactions into 990 categories and detects anomalies.</p>
+                  <p>Continuously classifies transactions against 990 categories and surfaces anomalies as they occur.</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <LineChart className="mt-0.5 h-4 w-4 text-brand-gold" />
-                  <p>Generates real-time portfolio intelligence for oversight stakeholders.</p>
+                  <p>Delivers real-time portfolio intelligence to funders, regulators, and investigators.</p>
                 </div>
               </div>
               <div className="mt-6 rounded-2xl border border-white/10 bg-brand-navy/60 p-4">
                 <p className="text-xs text-slate-300">
-                  A single data pipeline powers compliance automation and oversight intelligence.
+                  One integration powers compliance automation for organizations and continuous oversight for every stakeholder above them.
                 </p>
               </div>
             </div>
@@ -91,16 +92,16 @@ export default function Home() {
         <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-navy">
-              What Tallyview Does
+              The Platform
             </p>
             <h2 className="mt-4 text-3xl font-semibold text-brand-navy">
-              Real-time accountability for public money
+              Continuous accountability for every public dollar
             </h2>
             <p className="mt-4 text-base text-slate-600">
-              Tallyview connects to the accounting systems nonprofits already use,
-              then turns everyday financial activity into clear, real-time oversight
-              intelligence. That means easier compliance for organizations and
-              better visibility for funders, regulators, and the public.
+              Tallyview connects to the accounting systems nonprofits already use
+              and transforms routine financial activity into structured, real-time
+              oversight data. Organizations get automated compliance. Funders,
+              regulators, and the public get visibility they have never had before.
             </p>
           </div>
 
@@ -142,10 +143,10 @@ export default function Home() {
       <section className="bg-slate-50">
         <div className="mx-auto w-full max-w-6xl px-6 py-16">
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-navy">
-            Two-Sided Value
+            Who We Serve
           </p>
           <h2 className="mt-4 text-3xl font-semibold text-brand-navy">
-            One data pipeline. Two distinct products.
+            Built for organizations and the stakeholders who oversee them.
           </h2>
           <div className="mt-8 grid gap-6 lg:grid-cols-2">
             <div className="rounded-3xl border border-brand-navy/10 bg-white p-6 shadow-sm">
@@ -156,10 +157,10 @@ export default function Home() {
                 <h3 className="text-lg font-semibold text-brand-navy">For Nonprofits</h3>
               </div>
               <ul className="mt-4 space-y-3 text-sm text-slate-600">
-                <li>Progressive 990 generation that builds throughout the year</li>
-                <li>Board-ready financial reports and audit prep packages</li>
-                <li>Anomaly detection on vendor payments and expense drift</li>
-                <li>Restricted fund tracking with real-time compliance</li>
+                <li>Progressive 990 that builds continuously — not in a year-end scramble</li>
+                <li>Board-ready financials and audit prep packages generated automatically</li>
+                <li>Anomaly detection on vendor payments, expense drift, and allocation errors</li>
+                <li>Restricted fund tracking with real-time compliance monitoring</li>
               </ul>
             </div>
             <div className="rounded-3xl border border-brand-gold/30 bg-brand-gold/10 p-6 shadow-sm">
@@ -172,10 +173,10 @@ export default function Home() {
                 </h3>
               </div>
               <ul className="mt-4 space-y-3 text-sm text-slate-600">
-                <li>Real-time portfolio intelligence across connected grantees</li>
-                <li>Risk scoring, anomaly alerts, and peer benchmarking</li>
-                <li>Cross-organization entity mapping and fraud pattern detection</li>
-                <li>Investigation workbench with evidence-ready briefs</li>
+                <li>Live portfolio intelligence across every connected grantee</li>
+                <li>Risk scoring, anomaly alerts, and peer benchmarking at the portfolio level</li>
+                <li>Cross-organization entity resolution and fraud pattern detection</li>
+                <li>Investigation workbench with evidence-grade briefs and audit trails</li>
               </ul>
             </div>
           </div>
@@ -187,7 +188,7 @@ export default function Home() {
           How It Works
         </p>
         <h2 className="mt-4 text-3xl font-semibold text-brand-navy">
-          Connect. Intelligence. Accountability.
+          Connect. Detect. Surface.
         </h2>
         <div className="mt-8 grid gap-6 lg:grid-cols-3">
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -199,8 +200,8 @@ export default function Home() {
             </div>
             <h3 className="mt-4 text-lg font-semibold text-brand-navy">Connect</h3>
             <p className="mt-3 text-sm text-slate-600">
-              Nonprofits link their existing accounting system in minutes. No
-              migration. No rip-and-replace.
+              Organizations link their existing accounting system in minutes.
+              No data migration. No workflow disruption.
             </p>
           </div>
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -210,10 +211,11 @@ export default function Home() {
               </div>
               <span className="text-xs font-semibold text-slate-400">02</span>
             </div>
-            <h3 className="mt-4 text-lg font-semibold text-brand-navy">Intelligence</h3>
+            <h3 className="mt-4 text-lg font-semibold text-brand-navy">Detect</h3>
             <p className="mt-3 text-sm text-slate-600">
-              AI maps transactions to 990 categories, benchmarks performance,
-              and flags anomalies across the connected network.
+              Transactions are continuously classified against 990 categories,
+              benchmarked against peers, and screened for anomalies across the
+              connected network.
             </p>
           </div>
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -223,10 +225,11 @@ export default function Home() {
               </div>
               <span className="text-xs font-semibold text-slate-400">03</span>
             </div>
-            <h3 className="mt-4 text-lg font-semibold text-brand-navy">Accountability</h3>
+            <h3 className="mt-4 text-lg font-semibold text-brand-navy">Surface</h3>
             <p className="mt-3 text-sm text-slate-600">
-              Foundations, regulators, and investigators receive real-time
-              oversight intelligence and evidence packages.
+              Foundations, regulators, and investigators receive structured
+              oversight intelligence and evidence-grade reports — continuously,
+              not annually.
             </p>
           </div>
         </div>
@@ -237,10 +240,12 @@ export default function Home() {
           <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div>
               <h3 className="text-2xl font-semibold">
-                Join the waitlist for early access.
+                Request early access.
               </h3>
               <p className="mt-3 text-sm text-slate-300">
-                Share your role and we will reach out with demo access and launch timing.
+                We are onboarding nonprofits, foundations, regulators, and investigators
+                in controlled waves. Share your email and we will reach out with demo
+                access and launch timing.
               </p>
             </div>
             <WaitlistForm buttonLabel="Get early access" />

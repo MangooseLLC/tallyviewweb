@@ -7,8 +7,8 @@ import PasswordGate from '@/components/shared/PasswordGate';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
-  title: 'Tallyview — Accountability Intelligence for Public Money',
-  description: 'AI-powered accountability intelligence platform for public money. The Plaid for nonprofit accountability.',
+  title: 'Tallyview — The Accountability Layer for Public Money',
+  description: 'Real-time compliance automation and oversight intelligence for the nonprofit sector. Tallyview integrates with existing accounting systems to deliver continuous accountability for every public dollar.',
 };
 
 export default function RootLayout({
