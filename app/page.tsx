@@ -283,9 +283,6 @@ export default function Home() {
             <Link href="/case-files" className="hover:text-brand-gold">
               Tallyview Case Files
             </Link>
-            <Link href="/old-landing" className="hover:text-brand-gold">
-              Original landing
-            </Link>
           </div>
         </div>
       </footer>
