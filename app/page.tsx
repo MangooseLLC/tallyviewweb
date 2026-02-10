@@ -226,7 +226,7 @@ export default function Home() {
                 We are onboarding nonprofits now. Leave your email and we will send you a demo.
               </p>
             </div>
-            <WaitlistForm buttonLabel="Get early access" />
+            <WaitlistForm buttonLabel="Join waitlist" />
           </div>
           <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-slate-400 md:flex-row">
             <p>Tallyview &copy; 2026</p>
