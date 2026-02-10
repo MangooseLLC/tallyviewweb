@@ -2,15 +2,7 @@
 
 import { FormEvent, useState } from 'react';
 import { cn } from '@/lib/utils';
-
-export const WAITLIST_ROLES = [
-  { value: '', label: 'I am a...' },
-  { value: 'nonprofit', label: 'Nonprofit' },
-  { value: 'foundation', label: 'Foundation' },
-  { value: 'regulator', label: 'Regulator' },
-  { value: 'investigator', label: 'Investigator' },
-  { value: 'validator_partner', label: 'Validator Partner' },
-] as const;
+import { WAITLIST_ROLES } from '@/lib/utils/constants';
 
 type WaitlistFormProps = {
   className?: string;
@@ -44,7 +36,15 @@ export default function WaitlistForm({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      const data = await response.json();
+
+      let data: { success?: boolean; error?: string };
+      try {
+        data = await response.json();
+      } catch {
+        setStatus('error');
+        setMessage('Invalid response from server. Please try again.');
+        return;
+      }
 
       if (!response.ok || !data.success) {
         setStatus('error');

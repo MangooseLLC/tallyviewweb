@@ -30,6 +30,20 @@ export const RISK_THRESHOLDS = {
   LOW: 100,
 } as const;
 
+/** Single source of truth for waitlist role options (form + API validation). */
+export const WAITLIST_ROLES = [
+  { value: '', label: 'I am a...' },
+  { value: 'nonprofit', label: 'Nonprofit' },
+  { value: 'foundation', label: 'Foundation' },
+  { value: 'regulator', label: 'Regulator' },
+  { value: 'investigator', label: 'Investigator' },
+  { value: 'validator_partner', label: 'Validator Partner' },
+] as const;
+
+export const ALLOWED_WAITLIST_ROLES: string[] = WAITLIST_ROLES.filter(
+  (r): r is { value: string; label: string } => r.value !== ''
+).map((r) => r.value);
+
 export const NAV_ITEMS = {
   nonprofit: [
     { label: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
