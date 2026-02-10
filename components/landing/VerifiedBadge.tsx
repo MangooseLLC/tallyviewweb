@@ -13,14 +13,13 @@ export default function VerifiedBadge() {
               Tallyview Verified
             </h2>
             <p className="max-w-2xl text-base text-slate-600">
-              A credential that shows your organization&apos;s financials are monitored and verified
-              on an ongoing basis. Grant applications can reference it. Board members use it for
-              D&amp;O liability. Donors check it before giving. Auditors use it to narrow audit scope.
+              A credential that shows your organization&apos;s financials are verified
+              on an ongoing basis. You can reference it in grant applications. Board
+              members can use it for D&amp;O coverage. Donors can look it up before they
+              give. Auditors use it to narrow audit scope.
             </p>
             <p className="text-sm text-slate-600">
-              When foundations start requiring Tallyview Verified in grant agreements, more
-              nonprofits sign up and the verification network grows. The credential is valuable
-              because it sits on a shared, tamper-proof record anyone can check.
+              The credential sits on a shared, tamper-proof record anyone can check.
             </p>
             <ul className="space-y-2 text-sm text-slate-600">
               <li className="flex items-start gap-2">

@@ -3,13 +3,11 @@ import Link from 'next/link';
 import {
   ArrowRight,
   Building2,
-  ShieldCheck,
   Scale,
   LineChart,
   Link2,
   Radar,
   Lock,
-  Search,
 } from 'lucide-react';
 import WaitlistForm from '@/components/landing/WaitlistForm';
 import ArchitectureDiagram from '@/components/landing/ArchitectureDiagram';
@@ -46,22 +44,21 @@ export default function Home() {
           <div className="mt-12 grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-gold">
-                Accountability Intelligence
+                Nonprofit financial compliance
               </p>
               <h1 className="mt-5 text-4xl font-semibold leading-tight md:text-5xl">
-                The Accountability Chain
-                <span className="block text-brand-gold">for Public Money</span>
+                Your 990 builds itself.
+                <span className="block text-brand-gold">Your books stay audit-ready.</span>
               </h1>
               <p className="mt-5 max-w-xl text-base text-slate-200 md:text-lg">
-                Tallyview connects to the accounting systems nonprofits already
-                use. It monitors transactions in real time, flags anomalies, and
-                records every finding on a tamper-proof ledger that nonprofits,
-                funders, regulators, and investigators can verify for themselves.
+                Tallyview connects to your accounting system, classifies transactions
+                into 990 categories, catches errors early, and keeps an independent
+                compliance record that funders and auditors can check.
               </p>
               <div className="mt-8 max-w-xl">
                 <WaitlistForm buttonLabel="Join waitlist" />
                 <p className="mt-4 text-xs text-slate-300">
-                  Early access for nonprofits, foundations, regulators, and forensic investigators.
+                  Early access for nonprofits and the foundations that fund them.
                 </p>
               </div>
             </div>
@@ -73,29 +70,26 @@ export default function Home() {
               <div className="mt-4 space-y-4 text-sm text-slate-200">
                 <div className="flex items-start gap-3">
                   <Link2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-gold" />
-                  <p>Integrates with QuickBooks, Xero, Sage Intacct, NetSuite, and 20+ accounting systems.</p>
+                  <p>Connects to QuickBooks, Xero, Sage Intacct, and 20+ others. No data migration.</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <Radar className="mt-0.5 h-4 w-4 shrink-0 text-brand-gold" />
-                  <p>Classifies transactions into 990 categories and flags anomalies in real time.</p>
+                  <p>Sorts your transactions into 990 categories as they come in.</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <Lock className="mt-0.5 h-4 w-4 shrink-0 text-brand-gold" />
-                  <p>Every attestation is written to an immutable chain. No one can change the record, not even the organization.</p>
+                  <p>Each classification gets recorded on the Tallyview Accountability Chain. You can point auditors and funders to it.</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <LineChart className="mt-0.5 h-4 w-4 shrink-0 text-brand-gold" />
-                  <p>Delivers real-time portfolio intelligence to funders, regulators, and investigators.</p>
+                  <p>You get a Tallyview Verified credential you can include in grant applications.</p>
                 </div>
               </div>
               <div className="mt-6 rounded-2xl border border-white/10 bg-brand-navy/60 p-4">
                 <p className="text-xs text-slate-300">
-                  One integration. Compliance automation for organizations, real-time oversight for everyone else.
+                  One integration. Your compliance stays current. Funders and auditors see verified summaries.
                 </p>
               </div>
-              <p className="mt-4 text-center text-[10px] uppercase tracking-wider text-slate-400">
-                Powered by Avalanche
-              </p>
             </div>
           </div>
         </div>
@@ -109,13 +103,13 @@ export default function Home() {
                 The Platform
               </p>
               <h2 className="mt-3 text-2xl font-semibold text-brand-navy md:text-3xl">
-                Real-time accountability for public money
+                What Tallyview does with your data
               </h2>
               <p className="mt-3 text-base text-slate-600">
-                Tallyview connects to the accounting systems nonprofits already use
-                and turns financial activity into real-time oversight data. We run
-                it through our intelligence layer, then record commitments on the
-                Tallyview Accountability Chain so anyone can verify the results.
+                Tallyview connects to your accounting system and turns financial
+                activity into classified, verified data. We process it, then
+                record commitments on the Tallyview Accountability Chain so
+                funders and auditors can verify the results.
               </p>
             </div>
             <ArchitectureDiagram />
@@ -133,64 +127,25 @@ export default function Home() {
           <h2 className="mt-3 text-2xl font-semibold text-brand-navy md:text-3xl">
             Built for nonprofits and the people who oversee them.
           </h2>
-          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-3xl border border-brand-navy/10 bg-white p-6 shadow-sm">
+          <div className="mt-6 space-y-6">
+            <div className="rounded-3xl border border-brand-navy/10 bg-white p-6 shadow-sm lg:p-8">
               <div className="flex items-center gap-3">
                 <div className="rounded-2xl bg-brand-navy/10 p-2 text-brand-navy">
                   <Building2 className="h-5 w-5" />
                 </div>
                 <h3 className="text-lg font-semibold text-brand-navy">Nonprofits</h3>
               </div>
-              <ul className="mt-4 space-y-3 text-sm text-slate-600">
+              <ul className="mt-4 grid gap-3 text-sm text-slate-600 sm:grid-cols-2 lg:grid-cols-3">
                 <li>Progressive 990 that builds throughout the year</li>
                 <li>Board-ready financials and audit prep</li>
-                <li>Anomaly detection on vendor payments and allocation errors</li>
-                <li>Restricted fund tracking with real-time compliance</li>
-                <li className="font-medium text-brand-navy">Earn a Tallyview Verified credential backed by ongoing on-chain attestation</li>
+                <li>Error detection on vendor payments and allocation errors</li>
+                <li>Restricted fund tracking and compliance</li>
+                <li>Tallyview Verified credential backed by ongoing on-chain attestation</li>
               </ul>
             </div>
-            <div className="rounded-3xl border border-brand-gold/30 bg-brand-gold/10 p-6 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="rounded-2xl bg-brand-gold/30 p-2 text-brand-navy">
-                  <ShieldCheck className="h-5 w-5" />
-                </div>
-                <h3 className="text-lg font-semibold text-brand-navy">Foundations</h3>
-              </div>
-              <ul className="mt-4 space-y-3 text-sm text-slate-600">
-                <li>Real-time financial visibility across grantees</li>
-                <li>Risk scores, anomaly alerts, peer benchmarking</li>
-                <li>Cross-org entity resolution and fraud pattern detection</li>
-                <li className="font-medium text-brand-navy">Grant agreements as smart contracts that enforce reporting automatically</li>
-              </ul>
-            </div>
-            <div className="rounded-3xl border border-brand-navy/10 bg-white p-6 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="rounded-2xl bg-brand-navy/10 p-2 text-brand-navy">
-                  <Scale className="h-5 w-5" />
-                </div>
-                <h3 className="text-lg font-semibold text-brand-navy">Regulators</h3>
-              </div>
-              <ul className="mt-4 space-y-3 text-sm text-slate-600">
-                <li>Jurisdiction dashboard and risk map</li>
-                <li>Investigation queue and entity analysis</li>
-                <li>Reports and triage tools</li>
-                <li className="font-medium text-brand-navy">Query board members and vendors across state lines on a shared verification layer</li>
-              </ul>
-            </div>
-            <div className="rounded-3xl border border-brand-avalanche/20 bg-brand-avalanche/5 p-6 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="rounded-2xl bg-brand-avalanche/20 p-2 text-brand-avalanche">
-                  <Search className="h-5 w-5" />
-                </div>
-                <h3 className="text-lg font-semibold text-brand-navy">Investigators</h3>
-              </div>
-              <ul className="mt-4 space-y-3 text-sm text-slate-600">
-                <li>Investigation workbench and fraud typologies</li>
-                <li>Active cases and exportable briefs</li>
-                <li>Full audit trails</li>
-                <li className="font-medium text-brand-navy">Every anomaly and evidence finding timestamped on an immutable record</li>
-              </ul>
-            </div>
+            <p className="text-sm text-slate-600">
+              Tallyview also gives foundations, regulators, and auditors verified financial summaries from the organizations they oversee.
+            </p>
           </div>
         </div>
       </section>
@@ -201,7 +156,7 @@ export default function Home() {
             How It Works
           </p>
           <h2 className="mt-3 text-2xl font-semibold text-brand-navy md:text-3xl">
-            Connect. Detect. Verify. Surface.
+            Connect. Organize. Verify. Prove.
           </h2>
           <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -213,8 +168,7 @@ export default function Home() {
             </div>
             <h3 className="mt-4 text-lg font-semibold text-brand-navy">Connect</h3>
             <p className="mt-3 text-sm text-slate-600">
-              Organizations link their existing accounting system in minutes.
-              No data migration. No workflow disruption.
+              Link your accounting system. Takes a few minutes. Nothing to migrate.
             </p>
           </div>
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -224,10 +178,9 @@ export default function Home() {
               </div>
               <span className="text-xs font-semibold text-slate-400">02</span>
             </div>
-            <h3 className="mt-4 text-lg font-semibold text-brand-navy">Detect</h3>
+            <h3 className="mt-4 text-lg font-semibold text-brand-navy">Organize</h3>
             <p className="mt-3 text-sm text-slate-600">
-              Transactions are classified into 990 categories, benchmarked
-              against peers, and screened for anomalies across the network.
+              Transactions get sorted into 990 categories and compared to similar orgs.
             </p>
           </div>
           <div className="rounded-3xl border border-brand-avalanche/30 bg-brand-avalanche/5 p-6 shadow-sm">
@@ -239,9 +192,8 @@ export default function Home() {
             </div>
             <h3 className="mt-4 text-lg font-semibold text-brand-navy">Verify</h3>
             <p className="mt-3 text-sm text-slate-600">
-              Transaction classifications, anomaly flags, and compliance states are
-              recorded on the Tallyview Accountability Chain. The record cannot be
-              changed after the fact.
+              Classifications and compliance states get written to the Tallyview
+              Accountability Chain. That record is independent and permanent.
             </p>
           </div>
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -251,10 +203,9 @@ export default function Home() {
               </div>
               <span className="text-xs font-semibold text-slate-400">04</span>
             </div>
-            <h3 className="mt-4 text-lg font-semibold text-brand-navy">Surface</h3>
+            <h3 className="mt-4 text-lg font-semibold text-brand-navy">Prove</h3>
             <p className="mt-3 text-sm text-slate-600">
-              Foundations, regulators, and investigators get real-time
-              oversight reports instead of waiting for annual filings.
+              Funders, board members, and auditors can check your verified record directly.
             </p>
           </div>
           </div>
@@ -272,11 +223,10 @@ export default function Home() {
                 Request early access.
               </h3>
               <p className="mt-3 text-sm text-slate-300">
-                We are onboarding early users now. Share your role and email and we will
-                follow up with demo access and timing.
+                We are onboarding nonprofits now. Leave your email and we will send you a demo.
               </p>
             </div>
-            <WaitlistForm buttonLabel="Get early access" showRoleSelector />
+            <WaitlistForm buttonLabel="Get early access" />
           </div>
           <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-slate-400 md:flex-row">
             <p>Tallyview &copy; 2026</p>

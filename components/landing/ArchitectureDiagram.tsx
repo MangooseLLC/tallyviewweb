@@ -16,7 +16,7 @@ export default function ArchitectureDiagram() {
         <div className="rounded-xl border border-brand-gold/40 bg-brand-gold/10 p-3 text-sm font-semibold text-brand-navy">
           Tallyview Intelligence Layer (Off-Chain)
           <p className="mt-2 text-xs font-normal text-slate-600">
-            Transaction classification, anomaly detection, cross-org benchmarking
+            Transaction classification, error detection, cross-org benchmarking
           </p>
         </div>
         <div className="flex items-center gap-3 text-xs text-slate-500">
@@ -27,7 +27,7 @@ export default function ArchitectureDiagram() {
         <div className="rounded-xl border border-brand-avalanche/40 bg-brand-avalanche/10 p-3 text-sm font-semibold text-brand-navy">
           Tallyview Accountability Chain (On-Chain)
           <p className="mt-2 text-xs font-normal text-slate-600">
-            Tamper-proof audit trail, compliance rules, evidence chain-of-custody, entity relationships
+            Tamper-proof audit trail, compliance rules, entity relationships
           </p>
         </div>
         <div className="flex items-center gap-3 text-xs text-slate-500">
@@ -38,7 +38,7 @@ export default function ArchitectureDiagram() {
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm font-medium text-slate-700">
           Stakeholder Dashboards
           <p className="mt-2 text-xs text-slate-500">
-            Foundations: portfolio verification. Regulators: jurisdiction oversight. Investigators: evidence chain-of-custody. Nonprofits: Tallyview Verified credential.
+            Your dashboard: compliance scores, 990 progress, audit readiness. Funders and regulators see verified summaries.
           </p>
         </div>
       </div>
