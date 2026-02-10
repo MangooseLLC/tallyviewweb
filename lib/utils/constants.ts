@@ -41,7 +41,7 @@ export const WAITLIST_ROLES = [
 ] as const;
 
 export const ALLOWED_WAITLIST_ROLES: string[] = WAITLIST_ROLES.filter(
-  (r): r is { value: string; label: string } => r.value !== ''
+  (r) => r.value !== ''
 ).map((r) => r.value);
 
 export const NAV_ITEMS = {
