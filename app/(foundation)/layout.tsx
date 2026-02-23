@@ -2,6 +2,6 @@
 
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 
-export default function RegulatorLayout({ children }: { children: React.ReactNode }) {
+export default function FoundationLayout({ children }: { children: React.ReactNode }) {
   return <DashboardLayout>{children}</DashboardLayout>;
 }
