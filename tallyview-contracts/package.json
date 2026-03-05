@@ -1,0 +1,28 @@
+{
+  "name": "tallyview-contracts",
+  "version": "0.1.0",
+  "description": "Smart contracts for Tallyview — nonprofit accountability on Avalanche L1",
+  "private": true,
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:testnet": "hardhat run scripts/deploy-audit-ledger.ts --network tallyview-testnet",
+    "deploy:local": "hardhat run scripts/deploy-audit-ledger.ts --network localhost",
+    "register:testnet": "hardhat run scripts/register-test-org.ts --network tallyview-testnet",
+    "register:local": "hardhat run scripts/register-test-org.ts --network localhost",
+    "node": "hardhat node"
+  },
+  "devDependencies": {
+    "hardhat": "^2.22.0",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "typescript": "^5.3.3",
+    "ts-node": "^10.9.2",
+    "@types/node": "^20.10.5"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.1.0",
+    "@openzeppelin/contracts-upgradeable": "^5.1.0",
+    "@openzeppelin/hardhat-upgrades": "^3.6.0",
+    "dotenv": "^16.4.0"
+  }
+}
