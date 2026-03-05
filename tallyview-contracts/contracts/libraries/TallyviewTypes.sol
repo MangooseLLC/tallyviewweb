@@ -38,4 +38,80 @@ library TallyviewTypes {
         uint48 timestamp;
         address submitter;
     }
+
+    // -------------------------------------------------------------------------
+    //  ComplianceEngine Types
+    // -------------------------------------------------------------------------
+
+    /// @notice The category of compliance boundary a rule enforces.
+    ///         SpendingCap  — restricted fund, grant, or contract with a dollar limit.
+    ///         OverheadRatio — administrative cost ceiling expressed in basis points.
+    ///         CustomThreshold — extensible catch-all for future rule types
+    ///         (audit opinion scores, program output minimums, etc.).
+    enum RuleType {
+        SpendingCap,
+        OverheadRatio,
+        CustomThreshold
+    }
+
+    /// @notice Compliance health of a rule. Transitions are driven automatically
+    ///         by value reports or manually by an admin override.
+    enum RuleStatus {
+        Compliant,
+        AtRisk,
+        Violated
+    }
+
+    /// @notice Lifecycle state of a regulatory or reporting deadline.
+    enum DeadlineStatus {
+        Pending,
+        Approaching,
+        Overdue,
+        Met
+    }
+
+    /// @notice A compliance boundary applied to an organization.
+    ///         The mapping key is a bytes32 ruleId — not stored in the struct.
+    ///         For SpendingCap rules, currentValue accumulates (spending adds up).
+    ///         For OverheadRatio and CustomThreshold rules, currentValue is replaced
+    ///         on each report (it represents a point-in-time snapshot, not a running total).
+    struct ComplianceRule {
+        address org;
+        address setBy;
+        RuleType ruleType;
+        string label;
+        uint128 threshold;
+        uint128 currentValue;
+        uint48 startDate;
+        uint48 endDate;
+        RuleStatus status;
+        bool active;
+    }
+
+    /// @notice A regulatory or reporting deadline tracked onchain.
+    ///         The mapping key is a bytes32 deadlineId — not stored in the struct.
+    ///         completedDate is 0 until the deadline is marked as met.
+    struct FilingDeadline {
+        address org;
+        string filingType;
+        uint48 dueDate;
+        uint48 completedDate;
+        DeadlineStatus status;
+    }
+
+    /// @notice An immutable compliance violation record.
+    ///         Violations are stored in a flat array; the array index is the unique ID.
+    ///         Exactly one of ruleId or deadlineId is non-zero — ruleId for threshold
+    ///         breaches, deadlineId for missed filings. Both are bytes32(0) only if
+    ///         a future violation category is added that relates to neither.
+    struct Violation {
+        bytes32 ruleId;
+        bytes32 deadlineId;
+        address org;
+        uint48 timestamp;
+        string violationType;
+        uint128 thresholdValue;
+        uint128 actualValue;
+        bytes32 evidenceHash;
+    }
 }
