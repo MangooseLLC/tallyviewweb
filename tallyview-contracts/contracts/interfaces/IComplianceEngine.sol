@@ -8,30 +8,27 @@ import {TallyviewTypes} from "../libraries/TallyviewTypes.sol";
 /// @notice Active enforcement layer for nonprofit financial compliance on the
 ///         Tallyview Avalanche L1.
 ///
-///         Nonprofits operate under many compliance boundaries simultaneously:
-///         restricted fund spending limits, foundation grant caps, overhead ratio
-///         ceilings, government contract restrictions, and regulatory filing
-///         deadlines. ComplianceEngine encodes these boundaries as onchain rules
-///         and enforces them automatically as data flows in from the SaaS layer.
+///         Where AuditLedger is a passive record ("here's what the books looked like"),
+///         ComplianceEngine enforces boundaries ("here's what the rules say, and here's
+///         whether the org is following them").
 ///
-///         The core abstraction is a **ComplianceRule** — a boundary with a type
-///         (SpendingCap, OverheadRatio, CustomThreshold), a threshold, and an
-///         organization it applies to. The Tallyview relay reports values against
-///         rules; the contract checks thresholds, transitions status, and records
-///         violations. Filing deadlines are tracked separately with their own
-///         lifecycle (Pending → Approaching → Overdue / Met).
+///         The core abstraction is a ComplianceRule — a boundary with a type, a
+///         threshold, and enforcement logic. Grants, restricted funds, overhead limits,
+///         and government contract restrictions are all instances of compliance rules
+///         with different parameters.
 ///
-///         Where AuditLedger is a passive record ("here's what the books looked
-///         like"), ComplianceEngine is an active enforcer ("here's what the rules
-///         say, and here's whether the org is following them").
+///         ComplianceEngine does NOT duplicate org registration or audit storage.
+///         It references IAuditLedger for org validation — same address-based identity
+///         used everywhere on the Tallyview chain.
 ///
-///         This contract references IAuditLedger for org validation — it does NOT
-///         duplicate org registration or name resolution. It reads from AuditLedger,
-///         never writes to it.
+///         When a reported value crosses a threshold the contract does NOT revert.
+///         It records the breach, transitions status to Violated, and creates an
+///         immutable violation record. The contract is a record of truth, not a
+///         gatekeeper — we want to track HOW FAR over an org went, not block the
+///         relay from reporting reality.
 ///
-///         Events are designed for real-time dashboard consumption. On Avalanche's
-///         sub-second finality, a foundation program officer sees compliance
-///         alerts the moment the relay reports data — not minutes later.
+///         Rich events on every state change enable real-time dashboard consumption
+///         via Avalanche's sub-second finality.
 interface IComplianceEngine {
     // -------------------------------------------------------------------------
     //  Errors
@@ -53,16 +50,10 @@ interface IComplianceEngine {
     error ZeroAddress();
 
     // -------------------------------------------------------------------------
-    //  Events — Compliance Rules
+    //  Events
     // -------------------------------------------------------------------------
 
-    /// @notice Emitted when a new compliance rule is created for an org.
-    /// @param ruleId    Unique identifier for this rule.
-    /// @param org       The nonprofit the rule applies to.
-    /// @param ruleType  The category of compliance boundary.
-    /// @param label     Human-readable description (e.g. "Ford Foundation Grant #2026-417").
-    /// @param threshold The limit value — dollars in cents for SpendingCap,
-    ///                  basis points for OverheadRatio, raw value for CustomThreshold.
+    /// @notice Emitted when a new compliance rule is created for an organization.
     event RuleCreated(
         bytes32 indexed ruleId,
         address indexed org,
@@ -71,15 +62,14 @@ interface IComplianceEngine {
         uint128 threshold
     );
 
-    /// @notice Emitted when a rule is deactivated. The rule data remains readable.
+    /// @notice Emitted when a rule is soft-deactivated. The rule data remains
+    ///         onchain but no further value reports are accepted.
     event RuleDeactivated(bytes32 indexed ruleId);
 
-    /// @notice Emitted when the relay reports a value against a rule.
-    /// @param ruleId   The rule being reported against.
-    /// @param org      The nonprofit.
-    /// @param amount   The value reported in this transaction.
-    /// @param newTotal The updated currentValue after applying the report
-    ///                 (cumulative for SpendingCap, snapshot for others).
+    /// @notice Emitted when the relay reports a value against a compliance rule.
+    ///         For SpendingCap rules, newTotal reflects cumulative spending.
+    ///         For OverheadRatio and CustomThreshold rules, newTotal is the
+    ///         snapshot value that replaced the previous one.
     event ValueReported(
         bytes32 indexed ruleId,
         address indexed org,
@@ -87,9 +77,10 @@ interface IComplianceEngine {
         uint128 newTotal
     );
 
-    /// @notice Emitted when a rule's compliance status transitions.
-    ///         Transitions happen automatically on threshold breach (Compliant → AtRisk,
-    ///         Compliant/AtRisk → Violated) or manually via admin override.
+    /// @notice Emitted when a rule transitions between compliance states.
+    ///         Automatic transitions happen during reportValue (Compliant → AtRisk,
+    ///         Compliant → Violated, AtRisk → Violated). Manual transitions happen
+    ///         via updateRuleStatus (e.g. Violated → Compliant after data correction).
     event RuleStatusChanged(
         bytes32 indexed ruleId,
         address indexed org,
@@ -97,13 +88,8 @@ interface IComplianceEngine {
         TallyviewTypes.RuleStatus newStatus
     );
 
-    /// @notice Emitted when a compliance violation is recorded.
-    ///         Violations are immutable once created. The violationIndex is the
-    ///         violation's position in the flat violations array.
-    /// @param violationIndex Monotonic index — the violation's unique ID.
-    /// @param ruleId         The rule that was breached (bytes32(0) for deadline violations).
-    /// @param org            The nonprofit.
-    /// @param violationType  Category string (e.g. "spending-cap-breach", "overhead-exceeded").
+    /// @notice Emitted when a violation is recorded. Violations are immutable —
+    ///         they cannot be deleted or modified after creation.
     event ViolationRecorded(
         uint256 indexed violationIndex,
         bytes32 indexed ruleId,
@@ -111,11 +97,7 @@ interface IComplianceEngine {
         string violationType
     );
 
-    // -------------------------------------------------------------------------
-    //  Events — Filing Deadlines
-    // -------------------------------------------------------------------------
-
-    /// @notice Emitted when a new filing deadline is created.
+    /// @notice Emitted when a filing deadline is created for an organization.
     event DeadlineCreated(
         bytes32 indexed deadlineId,
         address indexed org,
@@ -123,7 +105,8 @@ interface IComplianceEngine {
         uint48 dueDate
     );
 
-    /// @notice Emitted when a deadline's lifecycle status transitions.
+    /// @notice Emitted when a deadline transitions between lifecycle states.
+    ///         Transitioning to Overdue auto-creates a "deadline-missed" violation.
     event DeadlineStatusChanged(
         bytes32 indexed deadlineId,
         address indexed org,
@@ -131,7 +114,7 @@ interface IComplianceEngine {
         TallyviewTypes.DeadlineStatus newStatus
     );
 
-    /// @notice Emitted when a deadline is marked as met.
+    /// @notice Emitted when a filing deadline is marked as met.
     event DeadlineCompleted(
         bytes32 indexed deadlineId,
         address indexed org
@@ -141,23 +124,29 @@ interface IComplianceEngine {
     //  Compliance Rules
     // -------------------------------------------------------------------------
 
-    /// @notice Create a compliance rule for a registered, active organization.
-    ///         The rule defines a boundary (spending cap, overhead ceiling, or custom
-    ///         threshold) that the relay will report values against over time.
-    /// @param ruleId    Unique identifier. Typically keccak256 of a human-readable
-    ///                  grant or policy name (e.g. keccak256("FORD-GRANT-2026-417")).
-    /// @param org       The nonprofit this rule applies to. Must be registered and
-    ///                  active in AuditLedger.
-    /// @param setBy     Who created this rule — a foundation, regulator, board, or
-    ///                  the system itself. Explicit because SYSTEM_ROLE often creates
-    ///                  rules on behalf of other entities.
-    /// @param ruleType  SpendingCap, OverheadRatio, or CustomThreshold.
-    /// @param label     Human-readable description for dashboard display.
-    /// @param threshold The limit. Dollars in cents for SpendingCap, basis points
-    ///                  for OverheadRatio, raw value for CustomThreshold.
-    /// @param startDate When the rule takes effect.
-    /// @param endDate   When the rule expires. 0 means indefinite — the rule has
-    ///                  no expiration (e.g. a board-set overhead ceiling).
+    /// @notice Create a compliance rule — a boundary applied to an organization.
+    ///         Rules represent any compliance constraint: restricted fund spending
+    ///         limits, foundation grant caps, overhead ratio ceilings, government
+    ///         contract restrictions, or custom thresholds.
+    /// @dev    setBy is an explicit parameter (not msg.sender) because SYSTEM_ROLE
+    ///         creates rules on behalf of foundations, boards, and regulators.
+    ///         Only ADMIN_ROLE, SYSTEM_ROLE, or FUNDER_ROLE.
+    /// @param ruleId    Unique identifier for this rule (typically a keccak256 hash
+    ///                  of a human-readable label like "FORD-GRANT-2026-417").
+    /// @param org       The nonprofit's address. Must be registered and active in
+    ///                  AuditLedger.
+    /// @param setBy     The entity that established this rule (foundation, regulator,
+    ///                  board, or system). Must not be address(0).
+    /// @param ruleType  The category of compliance boundary.
+    /// @param label     Human-readable description (e.g. "Ford Foundation Grant
+    ///                  #2026-417", "Board overhead ceiling").
+    /// @param threshold The limit — dollar amount in cents for SpendingCap, basis
+    ///                  points for OverheadRatio, raw value for CustomThreshold.
+    ///                  Must not be zero.
+    /// @param startDate When the rule takes effect (unix timestamp).
+    /// @param endDate   When the rule expires (unix timestamp). Pass 0 for indefinite
+    ///                  rules (e.g. a board-set overhead ceiling with no expiration).
+    ///                  If non-zero, must be greater than startDate.
     function createRule(
         bytes32 ruleId,
         address org,
@@ -169,31 +158,33 @@ interface IComplianceEngine {
         uint48 endDate
     ) external;
 
-    /// @notice Report a value against a compliance rule. Called by the relay as
-    ///         accounting data flows in from the SaaS layer.
+    /// @notice Report a value against a compliance rule.
+    ///         The relay calls this to relay financial data from the SaaS layer.
     ///
-    ///         Behavior depends on the rule's type:
-    ///         - **SpendingCap**: currentValue += amount (spending accumulates).
-    ///           A grant has a running total — each report adds new spending.
-    ///         - **OverheadRatio**: currentValue = amount (snapshot replacement).
-    ///           The ratio is recalculated each period; the latest value is what matters.
-    ///         - **CustomThreshold**: currentValue = amount (same as OverheadRatio).
+    ///         Behavior depends on RuleType:
+    ///         - SpendingCap:      currentValue += amount (spending accumulates
+    ///                             over the life of the grant/fund)
+    ///         - OverheadRatio:    currentValue = amount (each report is a fresh
+    ///                             snapshot — the ratio right now)
+    ///         - CustomThreshold:  currentValue = amount (snapshot, same as
+    ///                             OverheadRatio)
     ///
-    ///         After updating currentValue, the contract checks thresholds and
-    ///         automatically transitions status:
-    ///         - Over 90% of threshold → AtRisk (if currently Compliant)
-    ///         - Over threshold → Violated (if not already Violated) + auto-violation
+    ///         Automatically transitions status and records violations when
+    ///         thresholds are breached. Does NOT revert on breach — the violation
+    ///         is recorded and execution continues.
     ///
-    ///         The contract does NOT revert on breach. It records the overspend so
-    ///         we can track how far over the org went. The contract is a record of
-    ///         truth, not a gatekeeper.
-    /// @param ruleId The rule to report against. Must exist and be active.
-    /// @param amount The value to report — spending delta, current ratio, etc.
+    ///         Reverts with RuleExpired if endDate > 0 and block.timestamp > endDate.
+    /// @dev    Only SYSTEM_ROLE.
+    /// @param ruleId The rule to report against.
+    /// @param amount The value to report. For SpendingCap, this is the incremental
+    ///               spend. For OverheadRatio/CustomThreshold, this is the new
+    ///               snapshot value. Must not be zero.
     function reportValue(bytes32 ruleId, uint128 amount) external;
 
-    /// @notice Manually override a rule's compliance status. Used when a review
-    ///         determines a violation was a data error, or to restore status after
-    ///         corrective action. No restrictions on transition direction.
+    /// @notice Manually override a rule's compliance status.
+    ///         Allows any direction (e.g. Violated → Compliant after review
+    ///         determines a data error was the cause of the breach).
+    /// @dev    Only ADMIN_ROLE or SYSTEM_ROLE.
     /// @param ruleId    The rule to update.
     /// @param newStatus The new compliance status.
     function updateRuleStatus(
@@ -201,25 +192,27 @@ interface IComplianceEngine {
         TallyviewTypes.RuleStatus newStatus
     ) external;
 
-    /// @notice Deactivate a compliance rule. The rule data remains readable but
-    ///         no new values can be reported against it.
-    /// @param ruleId The rule to deactivate. Must exist and be active.
+    /// @notice Deactivate a compliance rule. The rule data remains onchain and
+    ///         queryable, but no further value reports are accepted.
+    /// @dev    Only ADMIN_ROLE.
+    /// @param ruleId The rule to deactivate.
     function deactivateRule(bytes32 ruleId) external;
 
     // -------------------------------------------------------------------------
     //  Filing Deadlines
     // -------------------------------------------------------------------------
 
-    /// @notice Create a filing deadline for a registered, active organization.
-    ///         Tracks regulatory or reporting deadlines (IRS 990, state registrations,
-    ///         grant reports, audit submissions) with automatic violation creation
-    ///         when deadlines are missed.
-    /// @param deadlineId Unique identifier. Typically keccak256 of a descriptive
-    ///                   string (e.g. keccak256("990-FY2025")).
-    /// @param org        The nonprofit. Must be registered and active in AuditLedger.
-    /// @param filingType Category string (e.g. "990", "990-PF", "state-registration-CA",
-    ///                   "audit-report", "grant-report-ford-2026").
-    /// @param dueDate    When the filing is due. Must be in the future.
+    /// @notice Create a filing deadline for an organization.
+    ///         Deadlines track regulatory or reporting obligations: IRS 990 filings,
+    ///         state charitable registration renewals, audit report due dates,
+    ///         grant reporting deadlines, etc.
+    /// @dev    Only ADMIN_ROLE or SYSTEM_ROLE.
+    /// @param deadlineId  Unique identifier (e.g. keccak256 of "990-FY2025").
+    /// @param org         The nonprofit's address. Must be registered and active.
+    /// @param filingType  The type of filing (e.g. "990", "990-PF", "990-EZ",
+    ///                    "state-registration-CA", "audit-report",
+    ///                    "grant-report-ford-2026").
+    /// @param dueDate     Unix timestamp of the deadline. Must be in the future.
     function createDeadline(
         bytes32 deadlineId,
         address org,
@@ -227,41 +220,40 @@ interface IComplianceEngine {
         uint48 dueDate
     ) external;
 
-    /// @notice Mark a filing deadline as completed. Sets the completion timestamp
-    ///         and transitions status to Met.
-    /// @param deadlineId The deadline to complete. Must not already be completed.
+    /// @notice Mark a filing deadline as completed.
+    ///         Sets completedDate to block.timestamp and transitions status to Met.
+    /// @dev    Only SYSTEM_ROLE or ADMIN_ROLE.
+    /// @param deadlineId The deadline to mark complete.
     function markDeadlineCompleted(bytes32 deadlineId) external;
 
-    /// @notice Transition a deadline's lifecycle status. Called by the relay or
-    ///         admin as dates approach or pass.
-    ///
+    /// @notice Transition a deadline's lifecycle status.
     ///         Valid transitions: Pending → Approaching, Pending → Overdue,
     ///         Approaching → Overdue. All other transitions revert.
-    ///
     ///         Transitioning to Overdue automatically creates a "deadline-missed"
     ///         violation record.
-    /// @param deadlineId The deadline to update. Must exist and not be completed.
-    /// @param newStatus  The new deadline status.
+    /// @dev    Only SYSTEM_ROLE or ADMIN_ROLE.
+    /// @param deadlineId The deadline to update.
+    /// @param newStatus  The target lifecycle status.
     function updateDeadlineStatus(
         bytes32 deadlineId,
         TallyviewTypes.DeadlineStatus newStatus
     ) external;
 
     // -------------------------------------------------------------------------
-    //  Queries — Rules
+    //  Queries — Compliance Rules
     // -------------------------------------------------------------------------
 
     /// @notice Retrieve the full compliance rule for a given ruleId.
-    /// @param ruleId The rule's unique identifier.
-    /// @return The ComplianceRule struct. All fields are zero if the rule
-    ///         does not exist — check org != address(0) to confirm existence.
+    /// @param ruleId The rule's identifier.
+    /// @return The stored ComplianceRule. Check org != address(0) to confirm
+    ///         the rule exists.
     function getRule(
         bytes32 ruleId
     ) external view returns (TallyviewTypes.ComplianceRule memory);
 
     /// @notice Get all ruleIds associated with an organization.
     /// @param org The org's address.
-    /// @return Array of ruleIds. Empty if the org has no rules.
+    /// @return An array of bytes32 ruleIds (may be empty).
     function getRulesForOrg(
         address org
     ) external view returns (bytes32[] memory);
@@ -270,62 +262,65 @@ interface IComplianceEngine {
     //  Queries — Violations
     // -------------------------------------------------------------------------
 
-    /// @notice Retrieve a violation by its array index.
-    ///         Violations use a monotonic counter — the index is the violation's
-    ///         unique, permanent identifier.
-    /// @param index The violation's position in the flat violations array.
-    /// @return The Violation struct.
+    /// @notice Retrieve a violation by its monotonic index.
+    ///         Violations use a flat array — the index IS the unique identifier,
+    ///         guaranteeing uniqueness even with multiple violations in the same block.
+    /// @param index The violation's array index.
+    /// @return The stored Violation record.
     function getViolation(
         uint256 index
     ) external view returns (TallyviewTypes.Violation memory);
 
-    /// @notice Total number of violations recorded across all orgs and rules.
-    /// @return The length of the violations array.
+    /// @notice Get the total number of recorded violations across all orgs.
+    /// @return The current length of the violations array.
     function getViolationCount() external view returns (uint256);
 
     /// @notice Get all violation indices for an organization.
     /// @param org The org's address.
-    /// @return Array of indices into the violations array.
+    /// @return An array of uint256 indices into the violations array.
     function getViolationsForOrg(
         address org
     ) external view returns (uint256[] memory);
 
-    /// @notice Get all violation indices for a specific compliance rule.
-    /// @param ruleId The rule's unique identifier.
-    /// @return Array of indices into the violations array.
+    /// @notice Get all violation indices associated with a specific rule.
+    /// @param ruleId The rule's identifier.
+    /// @return An array of uint256 indices into the violations array.
     function getViolationsForRule(
         bytes32 ruleId
     ) external view returns (uint256[] memory);
 
     // -------------------------------------------------------------------------
-    //  Queries — Deadlines
+    //  Queries — Filing Deadlines
     // -------------------------------------------------------------------------
 
     /// @notice Retrieve the full filing deadline for a given deadlineId.
-    /// @param deadlineId The deadline's unique identifier.
-    /// @return The FilingDeadline struct. All fields are zero if the deadline
-    ///         does not exist — check dueDate > 0 to confirm existence.
+    /// @param deadlineId The deadline's identifier.
+    /// @return The stored FilingDeadline. Check dueDate > 0 to confirm the
+    ///         deadline exists.
     function getDeadline(
         bytes32 deadlineId
     ) external view returns (TallyviewTypes.FilingDeadline memory);
 
     /// @notice Get all deadlineIds associated with an organization.
     /// @param org The org's address.
-    /// @return Array of deadlineIds. Empty if the org has no deadlines.
+    /// @return An array of bytes32 deadlineIds (may be empty).
     function getDeadlinesForOrg(
         address org
     ) external view returns (bytes32[] memory);
 
     // -------------------------------------------------------------------------
-    //  Queries — Dashboard
+    //  Queries — Aggregate
     // -------------------------------------------------------------------------
 
-    /// @notice Quick compliance health check for an organization. Designed for
-    ///         dashboard display — one call returns the key indicators.
+    /// @notice Quick compliance health check for an organization.
+    ///         Returns counts suitable for dashboard summary cards.
+    ///         Combined with Avalanche's sub-second finality, this gives foundation
+    ///         program officers a real-time compliance snapshot — status changes
+    ///         from reportValue or updateDeadlineStatus are reflected in under a second.
     /// @param org The org's address.
     /// @return activeRules      Number of active compliance rules for this org.
-    /// @return totalViolations  Total violations recorded against this org.
-    /// @return overdueDeadlines Number of deadlines currently in Overdue status.
+    /// @return totalViolations  Total number of violations recorded for this org.
+    /// @return overdueDeadlines Number of deadlines with status == Overdue.
     function getOrgComplianceSummary(
         address org
     )

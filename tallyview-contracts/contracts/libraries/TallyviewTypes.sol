@@ -114,4 +114,74 @@ library TallyviewTypes {
         uint128 actualValue;
         bytes32 evidenceHash;
     }
+
+    // -------------------------------------------------------------------------
+    //  AnomalyRegistry Types
+    // -------------------------------------------------------------------------
+
+    /// @notice Severity level of an AI-detected anomaly.
+    ///         Ordered from least to most severe so uint8 comparisons are meaningful.
+    enum AnomalySeverity {
+        Info,
+        Low,
+        Medium,
+        High,
+        Critical
+    }
+
+    /// @notice Category of anomaly detected by the offchain AI engine.
+    ///         Maps to the fraud typology database that powers detection.
+    ///         Custom is the extensible catch-all for patterns outside the
+    ///         predefined categories.
+    enum AnomalyCategory {
+        FinancialHealth,
+        Governance,
+        FraudPattern,
+        CompensationOutlier,
+        VendorConcentration,
+        ExpenseAllocation,
+        RevenueAnomaly,
+        RelatedParty,
+        DocumentProvenance,
+        Custom
+    }
+
+    /// @notice Lifecycle status of an anomaly finding.
+    ///         Transitions are strictly forward-only:
+    ///           New → Reviewed → Resolved
+    ///           New → Reviewed → Escalated
+    ///         No backward transitions are permitted. A finding cannot be
+    ///         un-reviewed, un-resolved, or un-escalated.
+    enum AnomalyStatus {
+        New,
+        Reviewed,
+        Resolved,
+        Escalated
+    }
+
+    /// @notice A single AI-detected anomaly finding.
+    ///         Stored in a flat array in AnomalyRegistry; the array index IS
+    ///         the unique identifier — not stored inside the struct.
+    ///         The offchain AI engine performs detection; only the finding
+    ///         metadata is recorded onchain as a permanent, immutable record.
+    ///         relatedRuleId optionally links to a ComplianceEngine rule
+    ///         (pure metadata — no hard dependency on IComplianceEngine).
+    ///
+    ///         Field order is optimized for EVM storage packing (6 slots instead
+    ///         of 8). Small fields (enums, uint16, uint48) are grouped so they
+    ///         share slots with address fields.
+    struct Anomaly {
+        address org;              // 20 bytes ─┐
+        AnomalySeverity severity; //  1 byte   │
+        AnomalyCategory category; //  1 byte   │ slot 0: 31/32
+        uint16 confidenceBps;     //  2 bytes   │
+        uint48 detectedAt;        //  6 bytes   │
+        AnomalyStatus status;     //  1 byte  ─┘
+        string title;             // ────────── slot 1 (pointer)
+        bytes32 evidenceHash;     // ────────── slot 2
+        bytes32 relatedRuleId;    // ────────── slot 3
+        address reviewedBy;       // 20 bytes ─┐ slot 4: 26/32
+        uint48 reviewedAt;        //  6 bytes ─┘
+        bytes32 reviewNoteHash;   // ────────── slot 5
+    }
 }
