@@ -262,4 +262,95 @@ library TallyviewTypes {
         uint48 endDate;                      //  6 bytes ── slot 2: 6/32
         bytes32 evidenceHash;                // ────────── slot 3
     }
+
+    // -------------------------------------------------------------------------
+    //  EvidenceVault Types
+    // -------------------------------------------------------------------------
+
+    /// @notice Classification of a piece of investigation evidence.
+    ///         Maps to the evidence taxonomy used by investigators and counsel.
+    ///         Tip is the entry point — anonymous whistleblower submissions
+    ///         anchored onchain for temporal priority (critical for qui tam standing).
+    enum EvidenceClassification {
+        Tip,
+        FinancialRecord,
+        AnalysisReport,
+        WitnessStatement,
+        CommunicationRecord,
+        PublicFiling,
+        InternalDocument,
+        AIGeneratedBrief,
+        Other
+    }
+
+    /// @notice Stage of an investigation's lifecycle.
+    ///         Stages are forward-only: Tip → Analysis → Discovery → Filing →
+    ///         Recovery → Closed. Stage skipping is permitted (analysis may
+    ///         happen offchain). The Closed stage can only be set via closeCase,
+    ///         not updateCaseStage, preserving the admin-only closure gate.
+    enum InvestigationStage {
+        Tip,
+        Analysis,
+        Discovery,
+        Filing,
+        Recovery,
+        Closed
+    }
+
+    /// @notice Whether an evidence entry is sealed (access-restricted).
+    ///         Sealing is forward-only — once Sealed, cannot revert to Unsealed.
+    ///         Sealed evidence is visible only to authorized investigators and
+    ///         counsel, protecting active investigations from premature disclosure.
+    enum SealStatus {
+        Unsealed,
+        Sealed
+    }
+
+    /// @notice An investigation case targeting a nonprofit organization.
+    ///         Cases track the full investigation pipeline from tip to closure.
+    ///         Investigators are granted per-case access (need-to-know basis).
+    ///         Sealing restricts evidence visibility; closing ends evidence
+    ///         submission. These are independent lifecycle events — a case can
+    ///         be sealed but still active, or closed but unsealed.
+    ///
+    ///         The mapping key (caseId) is NOT stored inside the struct.
+    ///
+    ///         Field order is optimized for EVM storage packing (3 slots).
+    struct Case {
+        address targetOrg;                   // 20 bytes ─┐
+        InvestigationStage stage;            //  1 byte   │
+        uint48 openedAt;                     //  6 bytes  │ slot 0: 28/32
+        bool isSealed;                       //  1 byte  ─┘
+        address leadInvestigator;            // 20 bytes ─┐
+        uint48 closedAt;                     //  6 bytes ─┘ slot 1: 26/32
+        string title;                        // ────────── slot 2 (pointer)
+    }
+
+    /// @notice A single piece of investigation evidence with chain-of-custody
+    ///         metadata. Evidence is immutable once submitted — the hash,
+    ///         timestamp, submitter, and classification are permanent. This
+    ///         immutability is what makes evidence admissible-grade: the chain
+    ///         proves the evidence existed in a specific form at a specific time.
+    ///
+    ///         relatedAnomalyId and relatedEntityId are soft references — bytes32
+    ///         values decoded by the SaaS layer to look up AnomalyRegistry
+    ///         anomalies or EntityGraph entities. EvidenceVault does NOT import
+    ///         IAnomalyRegistry or IEntityGraph. These are cross-contract
+    ///         breadcrumbs, not hard dependencies.
+    ///
+    ///         Stored in a flat array; the array index IS the unique identifier
+    ///         — not stored inside the struct.
+    ///
+    ///         Field order is optimized for EVM storage packing (6 slots).
+    struct EvidenceEntry {
+        bytes32 caseId;                      // ────────── slot 0
+        address submitter;                   // 20 bytes ─┐
+        EvidenceClassification classification; // 1 byte  │
+        uint48 submittedAt;                  //  6 bytes  │ slot 1: 28/32
+        SealStatus sealStatus;               //  1 byte  ─┘
+        string description;                  // ────────── slot 2 (pointer)
+        bytes32 contentHash;                 // ────────── slot 3
+        bytes32 relatedAnomalyId;            // ────────── slot 4
+        bytes32 relatedEntityId;             // ────────── slot 5
+    }
 }
