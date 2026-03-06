@@ -184,4 +184,82 @@ library TallyviewTypes {
         uint48 reviewedAt;        //  6 bytes ─┘
         bytes32 reviewNoteHash;   // ────────── slot 5
     }
+
+    // -------------------------------------------------------------------------
+    //  EntityGraph Types
+    // -------------------------------------------------------------------------
+
+    /// @notice Classification of an entity in the relationship graph.
+    ///         Person  — board member, executive, key employee, or related individual.
+    ///         Vendor  — company or individual receiving payments from a nonprofit.
+    ///         Address — a physical or mailing address shared across entities.
+    enum EntityType {
+        Person,
+        Vendor,
+        Address
+    }
+
+    /// @notice The role an entity plays in its relationship with an organization.
+    ///         BoardMember       — serves on the org's board of directors.
+    ///         Executive         — officer-level (CEO, CFO, COO, etc.).
+    ///         KeyEmployee       — highly compensated or decision-making staff.
+    ///         VendorPayee       — receives payments from the org.
+    ///         RegisteredAddress — the org's official registered address.
+    ///         MailingAddress    — the org's mailing or correspondence address.
+    ///         RelatedParty      — related individual per IRS definitions.
+    ///         Custom            — extensible catch-all for relationship types
+    ///                            outside the predefined categories.
+    enum RelationshipType {
+        BoardMember,
+        Executive,
+        KeyEmployee,
+        VendorPayee,
+        RegisteredAddress,
+        MailingAddress,
+        RelatedParty,
+        Custom
+    }
+
+    /// @notice Whether a relationship edge is currently active or has ended.
+    enum EdgeStatus {
+        Active,
+        Inactive
+    }
+
+    /// @notice A person, vendor, or address in the relationship graph.
+    ///         Entities are privacy-preserving: identityHash is a keccak256
+    ///         fingerprint of the real identity data (e.g., name + DOB for people,
+    ///         EIN/name for vendors, normalized string for addresses). Raw PII
+    ///         stays offchain. The label field provides a human-readable name for
+    ///         dashboard display.
+    ///
+    ///         The mapping key (entityId) is NOT stored inside the struct.
+    ///
+    ///         Field order is optimized for EVM storage packing (3 slots).
+    struct Entity {
+        EntityType entityType;   //  1 byte  ─┐
+        uint48 createdAt;        //  6 bytes  │ slot 0: 8/32
+        bool active;             //  1 byte  ─┘
+        bytes32 identityHash;    // ────────── slot 1
+        string label;            // ────────── slot 2 (pointer)
+    }
+
+    /// @notice A directed relationship between an entity and an organization.
+    ///         Edges are immutable records — deactivation sets status to Inactive
+    ///         and records endDate, but never deletes the edge. Historical
+    ///         connections matter for investigations.
+    ///
+    ///         entityId and org are data fields (what the edge connects), NOT the
+    ///         edge's own key. The mapping key (edgeId) is NOT stored in the struct.
+    ///
+    ///         Field order is optimized for EVM storage packing (4 slots).
+    struct RelationshipEdge {
+        bytes32 entityId;                    // ────────── slot 0
+        address org;                         // 20 bytes ─┐
+        RelationshipType relationshipType;   //  1 byte   │
+        EdgeStatus status;                   //  1 byte   │ slot 1: 28/32
+        uint48 startDate;                    //  6 bytes ─┘
+        uint48 endDate;                      //  6 bytes ── slot 2: 6/32
+        bytes32 evidenceHash;                // ────────── slot 3
+    }
 }
