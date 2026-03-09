@@ -5,10 +5,10 @@ import { QBOClient } from '@/lib/qbo-client';
 
 export async function POST() {
   try {
-    // Check for an existing org in the database
-    let org = await prisma.organization.findFirst();
+    let org = await prisma.organization.findFirst({
+      where: { qboRealmId: { not: null } },
+    });
 
-    // Shortcut path: if no org exists but env vars are set, bootstrap from env
     if (!org && process.env.QBO_ACCESS_TOKEN && process.env.QBO_REALM_ID) {
       const client = new QBOClient(
         process.env.QBO_ACCESS_TOKEN,

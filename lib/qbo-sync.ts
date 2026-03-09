@@ -14,9 +14,12 @@ export interface SyncResult {
 export async function syncOrganization(orgId: string): Promise<SyncResult> {
   const org = await prisma.organization.findUnique({ where: { id: orgId } });
   if (!org) throw new Error('Organization not found');
+  if (!org.qboRealmId || !org.accessToken) {
+    throw new Error('Organization has no QuickBooks connection');
+  }
 
   let accessToken = org.accessToken;
-  if (new Date() >= org.tokenExpiresAt) {
+  if (org.tokenExpiresAt && new Date() >= org.tokenExpiresAt && org.refreshToken) {
     const tokens = await refreshAccessToken(org.refreshToken);
     accessToken = tokens.access_token;
     await prisma.organization.update({
@@ -81,13 +84,13 @@ export async function syncOrganization(orgId: string): Promise<SyncResult> {
         amount: inv.TotalAmt,
         customerName: inv.CustomerRef?.name || null,
         status: inv.Balance === 0 ? 'Paid' : 'Open',
-        rawData: JSON.stringify(inv),
+        rawData: inv,
       },
       update: {
         txnDate: new Date(inv.TxnDate),
         amount: inv.TotalAmt,
         status: inv.Balance === 0 ? 'Paid' : 'Open',
-        rawData: JSON.stringify(inv),
+        rawData: inv,
       },
     });
   }
@@ -119,13 +122,13 @@ export async function syncOrganization(orgId: string): Promise<SyncResult> {
           bill.Line?.[0]?.AccountBasedExpenseLineDetail?.AccountRef?.value ||
           null,
         status: bill.Balance === 0 ? 'Paid' : 'Open',
-        rawData: JSON.stringify(bill),
+        rawData: bill,
       },
       update: {
         txnDate: new Date(bill.TxnDate),
         amount: bill.TotalAmt,
         status: bill.Balance === 0 ? 'Paid' : 'Open',
-        rawData: JSON.stringify(bill),
+        rawData: bill,
       },
     });
   }
@@ -155,12 +158,12 @@ export async function syncOrganization(orgId: string): Promise<SyncResult> {
         accountName: purch.AccountRef?.name || null,
         accountId: purch.AccountRef?.value || null,
         status: null,
-        rawData: JSON.stringify(purch),
+        rawData: purch,
       },
       update: {
         txnDate: new Date(purch.TxnDate),
         amount: purch.TotalAmt,
-        rawData: JSON.stringify(purch),
+        rawData: purch,
       },
     });
   }
@@ -188,12 +191,12 @@ export async function syncOrganization(orgId: string): Promise<SyncResult> {
           : je.Line?.[0]?.Description || null,
         amount: je.TotalAmt,
         status: null,
-        rawData: JSON.stringify(je),
+        rawData: je,
       },
       update: {
         txnDate: new Date(je.TxnDate),
         amount: je.TotalAmt,
-        rawData: JSON.stringify(je),
+        rawData: je,
       },
     });
   }

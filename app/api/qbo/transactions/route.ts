@@ -7,11 +7,15 @@ export async function GET(request: NextRequest) {
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
     const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') || '25')));
     const sortBy = searchParams.get('sortBy') || 'txnDate';
-    const sortOrder = (searchParams.get('sortOrder') || 'desc') as 'asc' | 'desc';
+    const rawSortOrder = searchParams.get('sortOrder') || 'desc';
+    const sortOrder: 'asc' | 'desc' = rawSortOrder === 'asc' ? 'asc' : 'desc';
     const search = searchParams.get('search') || '';
     const sourceType = searchParams.get('sourceType') || '';
 
-    const org = await prisma.organization.findFirst();
+    const org = await prisma.organization.findFirst({
+      where: { qboRealmId: { not: null } },
+      orderBy: { createdAt: 'desc' },
+    });
     if (!org) {
       return NextResponse.json({ transactions: [], total: 0, page, pageSize });
     }
@@ -20,10 +24,10 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       where.OR = [
-        { description: { contains: search } },
-        { vendorName: { contains: search } },
-        { customerName: { contains: search } },
-        { accountName: { contains: search } },
+        { description: { contains: search, mode: 'insensitive' } },
+        { vendorName: { contains: search, mode: 'insensitive' } },
+        { customerName: { contains: search, mode: 'insensitive' } },
+        { accountName: { contains: search, mode: 'insensitive' } },
       ];
     }
 

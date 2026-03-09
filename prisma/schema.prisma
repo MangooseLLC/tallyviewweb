@@ -3,28 +3,102 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
+// ---------------------------------------------------------------------------
+//  Auth & Tenancy
+// ---------------------------------------------------------------------------
+
+model User {
+  id          String          @id @default(cuid())
+  supabaseId  String          @unique
+  email       String          @unique
+  name        String?
+  avatarUrl   String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  memberships OrgMembership[]
+  invitations Invitation[]    @relation("InvitedBy")
+}
+
+model OrgMembership {
+  id        String   @id @default(cuid())
+  userId    String
+  orgId     String
+  role      OrgRole  @default(VIEWER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, orgId])
+  @@index([orgId])
+}
+
+enum OrgRole {
+  OWNER
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+model Invitation {
+  id          String           @id @default(cuid())
+  email       String
+  orgId       String
+  role        OrgRole          @default(VIEWER)
+  token       String           @unique @default(uuid())
+  status      InvitationStatus @default(PENDING)
+  invitedById String?
+  expiresAt   DateTime
+  createdAt   DateTime         @default(now())
+
+  org     Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  inviter User?        @relation("InvitedBy", fields: [invitedById], references: [id], onDelete: SetNull)
+
+  @@index([email])
+  @@index([orgId])
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+}
+
+// ---------------------------------------------------------------------------
+//  Organization & QBO
+// ---------------------------------------------------------------------------
+
 model Organization {
-  id             String        @id @default(cuid())
+  id             String    @id @default(cuid())
   name           String
-  qboRealmId     String        @unique
-  accessToken    String
-  refreshToken   String
-  tokenExpiresAt DateTime
+  qboRealmId     String?   @unique
+  accessToken    String?
+  refreshToken   String?
+  tokenExpiresAt DateTime?
+  chainAddress   String?   @unique
   lastSyncedAt   DateTime?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  transactions   Transaction[]
-  accounts       Account[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  transactions     Transaction[]
+  accounts         Account[]
+  memberships      OrgMembership[]
+  invitations      Invitation[]
+  syncJobs         SyncJob[]
+  auditSubmissions AuditSubmission[]
 }
 
 model Account {
   id             String       @id @default(cuid())
   orgId          String
-  org            Organization @relation(fields: [orgId], references: [id])
+  org            Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   qboId          String
   name           String
   accountType    String
@@ -41,9 +115,9 @@ model Account {
 }
 
 model Transaction {
-  id             String   @id @default(cuid())
+  id             String       @id @default(cuid())
   orgId          String
-  org            Organization @relation(fields: [orgId], references: [id])
+  org            Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   qboId          String
   sourceType     String
   txnDate        DateTime
@@ -55,10 +129,54 @@ model Transaction {
   customerName   String?
   status         String?
   irs990Category String?
-  rawData        String?
-  createdAt      DateTime @default(now())
+  rawData        Json?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
   @@unique([orgId, qboId, sourceType])
   @@index([orgId, txnDate])
   @@index([orgId, sourceType])
+}
+
+// ---------------------------------------------------------------------------
+//  Sync Pipeline
+// ---------------------------------------------------------------------------
+
+model SyncJob {
+  id           String       @id @default(cuid())
+  orgId        String
+  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  status       SyncStatus   @default(RUNNING)
+  startedAt    DateTime     @default(now())
+  completedAt  DateTime?
+  accountCount Int          @default(0)
+  txnCount     Int          @default(0)
+  error        String?
+
+  @@index([orgId, startedAt])
+}
+
+enum SyncStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+// ---------------------------------------------------------------------------
+//  On-Chain Audit Trail
+// ---------------------------------------------------------------------------
+
+model AuditSubmission {
+  id          String       @id @default(cuid())
+  orgId       String
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  year        Int
+  month       Int
+  merkleRoot  String
+  schemaHash  String
+  txHash      String       @unique
+  submittedAt DateTime     @default(now())
+
+  @@unique([orgId, year, month])
+  @@index([orgId])
 }

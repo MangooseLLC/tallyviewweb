@@ -3,7 +3,10 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
-    const org = await prisma.organization.findFirst();
+    const org = await prisma.organization.findFirst({
+      where: { qboRealmId: { not: null } },
+      orderBy: { createdAt: 'desc' },
+    });
     if (!org) {
       return NextResponse.json({ accounts: [], grouped: {} });
     }
