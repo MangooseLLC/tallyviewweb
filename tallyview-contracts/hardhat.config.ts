@@ -5,31 +5,30 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 
-const raw = process.env.PRIVATE_KEY ?? "";
-const PRIVATE_KEY = raw ? (raw.startsWith("0x") ? raw : `0x${raw}`) : "";
-const TALLYVIEW_RPC_URL =
-  process.env.TALLYVIEW_RPC_URL ||
-  "https://api.avax-test.network/ext/bc/C/rpc";
-
 const config: HardhatUserConfig = {
   solidity: {
-    version: "0.8.24",
+    version: "0.8.24", // match your contracts' pragma
     settings: {
       optimizer: {
         enabled: true,
         runs: 200,
       },
-      evmVersion: "paris",
     },
   },
   networks: {
-    localhost: {
-      url: "http://127.0.0.1:8545",
-    },
-    "tallyview-testnet": {
-      url: TALLYVIEW_RPC_URL,
+    hardhat: {},
+    fuji: {
+      url: process.env.FUJI_RPC_URL || "https://api.avax-test.network/ext/bc/C/rpc",
       chainId: 43113,
-      accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
+      accounts: process.env.PRIVATE_KEY
+        ? [process.env.PRIVATE_KEY]
+        : [],
+      gasPrice: 25000000000, // 25 gwei — safe for Fuji
+    },
+  },
+  etherscan: {
+    apiKey: {
+      avalancheFujiTestnet: "your-snowtrace-api-key", // optional, for contract verification
     },
   },
 };
