@@ -6,10 +6,8 @@
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
-    "deploy:testnet": "hardhat run scripts/deploy-audit-ledger.ts --network tallyview-testnet",
-    "deploy:local": "hardhat run scripts/deploy-audit-ledger.ts --network localhost",
-    "register:testnet": "hardhat run scripts/register-test-org.ts --network tallyview-testnet",
-    "register:local": "hardhat run scripts/register-test-org.ts --network localhost",
+    "deploy:fuji": "hardhat run scripts/deploy-audit-ledger.ts --network fuji",
+    "register:fuji": "hardhat run scripts/register-test-org.ts --network fuji",
     "node": "hardhat node"
   },
   "devDependencies": {
