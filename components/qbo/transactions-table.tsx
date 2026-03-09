@@ -65,7 +65,12 @@ export function TransactionsTable({ refreshKey }: { refreshKey?: number }) {
 
       const res = await fetch(`/api/qbo/transactions?${params}`);
       const json = await res.json();
-      setData(json);
+      if (json.error) {
+        console.error('Transaction API error:', json.error);
+        setData({ transactions: [], total: 0, page: 1, pageSize: 25, totalPages: 0 });
+      } else {
+        setData(json);
+      }
     } catch (err) {
       console.error('Failed to fetch transactions:', err);
     } finally {
