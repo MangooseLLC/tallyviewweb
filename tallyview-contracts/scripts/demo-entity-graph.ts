@@ -29,13 +29,11 @@ async function main() {
   const auditLedger = await ethers.getContractAt("AuditLedger", auditLedgerAddress);
   const entityGraph = await ethers.getContractAt("EntityGraph", entityGraphAddress);
 
-  const signers = await ethers.getSigners();
-  const [admin, signerB, signerC] = signers;
+  const [admin] = await ethers.getSigners();
   console.log("Running demo with admin:", admin.address);
 
   const SYSTEM_ROLE = ethers.keccak256(ethers.toUtf8Bytes("SYSTEM_ROLE"));
 
-  // Ensure admin has required roles on both contracts
   if (!(await auditLedger.hasRole(SYSTEM_ROLE, admin.address))) {
     const tx = await auditLedger.grantRole(SYSTEM_ROLE, admin.address);
     await tx.wait();
@@ -47,16 +45,14 @@ async function main() {
     console.log("Granted SYSTEM_ROLE on EntityGraph to admin.");
   }
 
-  // Resolve lighthouse-academies (assumed pre-registered)
   const orgA = await auditLedger.resolveByName("lighthouse-academies");
   if (orgA === ethers.ZeroAddress) {
     throw new Error('"lighthouse-academies" not registered in AuditLedger');
   }
   console.log(`Resolved "lighthouse-academies" → ${orgA}`);
 
-  // Register orgB and orgC explicitly for this demo
-  const orgB = signerB.address;
-  const orgC = signerC.address;
+  const orgB = ethers.getAddress("0x" + ethers.keccak256(ethers.toUtf8Bytes("orgB-northwest")).slice(26));
+  const orgC = ethers.getAddress("0x" + ethers.keccak256(ethers.toUtf8Bytes("orgC-pacific")).slice(26));
 
   const einHashB = ethers.solidityPackedKeccak256(["string"], ["98-7654321"]);
   const einHashC = ethers.solidityPackedKeccak256(["string"], ["55-1234567"]);

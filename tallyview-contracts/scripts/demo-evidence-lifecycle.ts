@@ -31,28 +31,23 @@ async function main() {
   const auditLedger = await ethers.getContractAt("AuditLedger", auditLedgerAddress);
   const vault = await ethers.getContractAt("EvidenceVault", evidenceVaultAddress);
 
-  const signers = await ethers.getSigners();
-  const [admin, systemRelay, investigatorA, investigatorB, regulatorSigner] = signers;
-  console.log("Running demo with signers:");
-  console.log("  Admin (deployer):  ", admin.address);
-  console.log("  System relay:      ", systemRelay.address);
-  console.log("  Investigator A:    ", investigatorA.address);
-  console.log("  Investigator B:    ", investigatorB.address);
-  console.log("  Regulator:         ", regulatorSigner.address);
+  const [admin] = await ethers.getSigners();
+  console.log("Running demo with single signer (admin plays all roles on Fuji):");
+  console.log("  Admin / System / Regulator / Investigators:", admin.address);
 
   const SYSTEM_ROLE = ethers.keccak256(ethers.toUtf8Bytes("SYSTEM_ROLE"));
   const REGULATOR_ROLE = ethers.keccak256(ethers.toUtf8Bytes("REGULATOR_ROLE"));
 
-  if (!(await vault.hasRole(SYSTEM_ROLE, systemRelay.address))) {
-    const tx = await vault.grantRole(SYSTEM_ROLE, systemRelay.address);
+  if (!(await vault.hasRole(SYSTEM_ROLE, admin.address))) {
+    const tx = await vault.grantRole(SYSTEM_ROLE, admin.address);
     await tx.wait();
-    console.log("Granted SYSTEM_ROLE to system relay.");
+    console.log("Granted SYSTEM_ROLE to admin.");
   }
 
-  if (!(await vault.hasRole(REGULATOR_ROLE, regulatorSigner.address))) {
-    const tx = await vault.grantRole(REGULATOR_ROLE, regulatorSigner.address);
+  if (!(await vault.hasRole(REGULATOR_ROLE, admin.address))) {
+    const tx = await vault.grantRole(REGULATOR_ROLE, admin.address);
     await tx.wait();
-    console.log("Granted REGULATOR_ROLE to regulator signer.");
+    console.log("Granted REGULATOR_ROLE to admin.");
   }
 
   const orgAddress = await auditLedger.resolveByName("lighthouse-academies");
@@ -75,11 +70,11 @@ async function main() {
     caseId,
     orgAddress,
     caseTitle,
-    investigatorA.address,
+    admin.address,
   );
   await tx.wait();
   console.log(`Opened case: ${caseTitle}`);
-  console.log(`Lead investigator: ${investigatorA.address}`);
+  console.log(`Lead investigator: ${admin.address}`);
 
   // ---------------------------------------------------------------------------
   //  Step 3 — Authorize additional investigator (as regulator)
@@ -87,12 +82,12 @@ async function main() {
 
   console.log("\n========== STEP 3: Authorize Investigator ==========");
 
-  tx = await vault.connect(regulatorSigner).authorizeInvestigator(
+  tx = await vault.authorizeInvestigator(
     caseId,
-    investigatorB.address,
+    admin.address,
   );
   await tx.wait();
-  console.log(`Regulator authorized investigator: ${investigatorB.address}`);
+  console.log(`Regulator authorized investigator: ${admin.address}`);
 
   // ---------------------------------------------------------------------------
   //  Step 4 — Submit evidence (demonstrating the pipeline)
@@ -104,7 +99,7 @@ async function main() {
   const tipHash = ethers.keccak256(
     ethers.toUtf8Bytes("anonymous-tip-ceo-vendor-steering-2026"),
   );
-  const tipTx = await vault.connect(systemRelay).submitEvidence(
+  const tipTx = await vault.submitEvidence(
     caseId,
     0, // EvidenceClassification.Tip
     "Anonymous tip: CEO steering contracts to spouse's company",
@@ -125,7 +120,7 @@ async function main() {
   const relatedAnomalyId = ethers.keccak256(
     ethers.toUtf8Bytes("anomaly-vendor-concentration-73pct"),
   );
-  const analysisTx = await vault.connect(investigatorA).submitEvidence(
+  const analysisTx = await vault.submitEvidence(
     caseId,
     2, // EvidenceClassification.AnalysisReport
     "AI-generated evidence brief \u2014 vendor concentration analysis",
@@ -146,7 +141,7 @@ async function main() {
   const relatedEntityId = ethers.keccak256(
     ethers.toUtf8Bytes("entity-vendor-reeves-associates"),
   );
-  const financialTx = await vault.connect(investigatorB).submitEvidence(
+  const financialTx = await vault.submitEvidence(
     caseId,
     1, // EvidenceClassification.FinancialRecord
     "Bank records showing payments to related-party vendor",
@@ -182,7 +177,7 @@ async function main() {
 
   console.log("\n========== STEP 6: Seal Case ==========");
 
-  tx = await vault.connect(regulatorSigner).sealCase(caseId);
+  tx = await vault.sealCase(caseId);
   await tx.wait();
   console.log(
     "  Case sealed by regulator \u2014 evidence restricted to authorized parties",
@@ -192,7 +187,7 @@ async function main() {
   const sealedEvidenceHash = ethers.keccak256(
     ethers.toUtf8Bytes("post-seal-supplemental-analysis-2026"),
   );
-  const sealedTx = await vault.connect(investigatorA).submitEvidence(
+  const sealedTx = await vault.submitEvidence(
     caseId,
     2, // EvidenceClassification.AnalysisReport
     "Supplemental analysis after case sealed",

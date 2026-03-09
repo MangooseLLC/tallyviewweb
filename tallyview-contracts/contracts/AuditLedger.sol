@@ -313,6 +313,12 @@ contract AuditLedger is
         return IAllowList(TX_ALLOW_LIST).readAllowList(addr) > 0;
     }
 
+    /// @notice Toggle Avalanche L1 mode (TxAllowList enforcement on org registration).
+    /// @param enabled True to require TxAllowList provisioning, false to skip.
+    function setAvalancheMode(bool enabled) external onlyRole(ADMIN_ROLE) {
+        _avalancheMode = enabled;
+    }
+
     // -------------------------------------------------------------------------
     //  UUPS
     // -------------------------------------------------------------------------
