@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id             String        @id @default(cuid())
+  name           String
+  qboRealmId     String        @unique
+  accessToken    String
+  refreshToken   String
+  tokenExpiresAt DateTime
+  lastSyncedAt   DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  transactions   Transaction[]
+  accounts       Account[]
+}
+
+model Account {
+  id             String       @id @default(cuid())
+  orgId          String
+  org            Organization @relation(fields: [orgId], references: [id])
+  qboId          String
+  name           String
+  accountType    String
+  accountSubType String?
+  classification String?
+  currentBalance Float?
+  currency       String       @default("USD")
+  active         Boolean      @default(true)
+  irs990Category String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([orgId, qboId])
+}
+
+model Transaction {
+  id             String   @id @default(cuid())
+  orgId          String
+  org            Organization @relation(fields: [orgId], references: [id])
+  qboId          String
+  sourceType     String
+  txnDate        DateTime
+  description    String?
+  amount         Float
+  accountName    String?
+  accountId      String?
+  vendorName     String?
+  customerName   String?
+  status         String?
+  irs990Category String?
+  rawData        String?
+  createdAt      DateTime @default(now())
+
+  @@unique([orgId, qboId, sourceType])
+  @@index([orgId, txnDate])
+  @@index([orgId, sourceType])
+}

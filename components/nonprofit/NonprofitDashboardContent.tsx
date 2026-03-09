@@ -54,7 +54,7 @@ export function NonprofitDashboardContent({ chainData }: NonprofitDashboardConte
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Lighthouse Academies — Financial Overview</p>
+          <p className="text-sm text-gray-500 mt-0.5">Bright Futures Youth Services — Financial Overview</p>
         </div>
         <TallyviewVerifiedBadge size="md" attestation={attestation} />
       </div>

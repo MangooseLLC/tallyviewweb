@@ -163,7 +163,7 @@ function detectRevenueAnomaly(months: MonthlyFinancialPackage[]): AnomalyFinding
 
 function detectGovernanceRedFlag(_months: MonthlyFinancialPackage[]): AnomalyFinding[] {
   // In the real pipeline this would pull board data from QuickBooks/governance module.
-  // For the demo, Lighthouse Academies has 7 board members including 2 with business
+  // For the demo, Bright Futures has 7 board members including 2 with business
   // relationships, so no red flag triggers. We return empty to show the rule exists
   // but only fires when conditions are met.
   return [];

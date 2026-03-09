@@ -14,8 +14,8 @@ export default async function Form990Page() {
 
   return (
     <Form990Content
-      orgName="Lighthouse Academies"
-      ein="84-3219876"
+      orgName="Bright Futures Youth Services"
+      ein="93-1234567"
       sections={progress.sections}
       sampleFields={progress.sampleFields}
       monthsProcessed={progress.monthsProcessed}

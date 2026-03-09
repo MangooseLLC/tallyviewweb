@@ -49,8 +49,8 @@ export function FoundationDashboardContent({ chainData }: FoundationDashboardCon
       if (org.riskScore < 45) color = 'bg-red-400';
       else if (org.riskScore < 60) color = 'bg-orange-400';
       else if (org.riskScore < 75) color = 'bg-yellow-400';
-      const isLighthouse = org.id === 'org-bright-futures';
-      return { id: org.id, name: org.name, score: org.riskScore, color, isLighthouse };
+      const isOnchainOrg = org.id === 'org-bright-futures';
+      return { id: org.id, name: org.name, score: org.riskScore, color, isOnchainOrg };
     });
 
   const moderateAlertValue = anomalySummary.live ? anomalySummary.open.toString() : '18';
@@ -120,7 +120,7 @@ export function FoundationDashboardContent({ chainData }: FoundationDashboardCon
                   className={`block h-5 w-5 rounded-sm ${sq.color} hover:ring-2 hover:ring-offset-1 hover:ring-gray-400 transition-all`}
                   title={`${sq.name}: ${sq.score}`}
                 />
-                {sq.isLighthouse && attestation?.live && (
+                {sq.isOnchainOrg && attestation?.live && (
                   <div className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-green-500 border border-white" title="Onchain Verified" />
                 )}
               </div>

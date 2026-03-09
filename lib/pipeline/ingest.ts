@@ -1,5 +1,5 @@
 /**
- * Simulated QuickBooks Online data for Lighthouse Academies.
+ * Simulated QuickBooks Online data for Bright Futures Youth Services.
  * 6 months: October 2025 through March 2026.
  *
  * Shaped like Codat-normalized QuickBooks API responses.
@@ -93,9 +93,9 @@ export interface MonthlyFinancialPackage {
 // ---------------------------------------------------------------------------
 
 const ORG_ID = 'org-bright-futures';
-const ORG_NAME = 'Lighthouse Academies';
-const EIN = '84-3219876';
-const MISSION = 'Providing equitable educational opportunities and after-school programming for underserved youth in urban communities.';
+const ORG_NAME = 'Bright Futures Youth Services';
+const EIN = '93-1234567';
+const MISSION = 'Empowering underserved youth through education, mentorship, and community engagement programs across the Pacific Northwest.';
 
 const COMPENSATION: CompensationEntry[] = [
   { name: 'Sarah Chen', title: 'CEO / Executive Director', type: 'executive', annualCompensation: 185_000_00, benefits: 37_000_00 },
