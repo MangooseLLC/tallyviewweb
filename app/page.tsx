@@ -32,7 +32,7 @@ export default function Home() {
               />
             </Link>
             <Link
-              href="/login"
+              href="/demo"
               className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white transition hover:border-brand-gold/60 hover:text-brand-gold"
             >
               View Demo
@@ -217,13 +217,108 @@ export default function Home() {
       <InstitutionalProof />
       <ValidatorNetwork />
 
-      <footer className="bg-brand-navy text-white">
-        <div className="mx-auto w-full max-w-6xl px-6 py-12">
-          <div className="flex flex-col items-center justify-between gap-3 text-xs text-slate-400 md:flex-row">
-            <p>Tallyview &copy; 2026</p>
-            <Link href="/case-files" className="hover:text-brand-gold">
-              Tallyview Case Files
-            </Link>
+      <footer className="border-t border-slate-200 bg-slate-50">
+        <div className="mx-auto w-full max-w-6xl px-6 pt-16 pb-8">
+          <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <div className="flex items-center gap-3">
+                <Image
+                  src="/tallyview-logo.svg"
+                  alt="Tallyview"
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 opacity-70 grayscale"
+                />
+                <span className="font-serif text-lg font-bold text-slate-700">
+                  Tallyview
+                </span>
+              </div>
+              <p className="mt-4 text-sm leading-relaxed text-slate-500">
+                Helping nonprofits stay audit-ready with automated 990
+                classification, real-time compliance monitoring, and
+                blockchain-verified financial records.
+              </p>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-bold text-slate-800">Legal</h4>
+              <ul className="mt-4 space-y-3">
+                <li>
+                  <span className="text-sm text-slate-400 cursor-default">
+                    Privacy Policy
+                  </span>
+                </li>
+                <li>
+                  <span className="text-sm text-slate-400 cursor-default">
+                    Terms of Service
+                  </span>
+                </li>
+                <li>
+                  <span className="text-sm text-slate-400 cursor-default">
+                    License Agreement
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-bold text-slate-800">Resources</h4>
+              <ul className="mt-4 space-y-3">
+                <li>
+                  <Link
+                    href="/case-files"
+                    className="text-sm text-slate-500 transition hover:text-brand-navy"
+                  >
+                    Case Files
+                  </Link>
+                </li>
+                <li>
+                  <a
+                    href="mailto:support@tallyview.org"
+                    className="text-sm text-slate-500 transition hover:text-brand-navy"
+                  >
+                    Contact Support
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-bold text-slate-800">
+                Connect With Us
+              </h4>
+              <ul className="mt-4 space-y-3">
+                <li>
+                  <a
+                    href="https://x.com/tallyview"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-slate-500 transition hover:text-brand-navy"
+                  >
+                    X (Twitter)
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://linkedin.com/company/tallyview"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-slate-500 transition hover:text-brand-navy"
+                  >
+                    LinkedIn
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-12 border-t border-slate-200 pt-8 text-center">
+            <p className="text-sm text-slate-400">
+              &copy; {new Date().getFullYear()} Tallyview. All rights reserved.
+            </p>
+            <p className="mt-1 text-xs text-slate-300">
+              Built with transparency in mind.
+            </p>
           </div>
         </div>
       </footer>
