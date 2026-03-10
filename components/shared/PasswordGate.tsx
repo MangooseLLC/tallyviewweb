@@ -4,6 +4,7 @@ import { useState, useEffect, FormEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import { Lock, Eye, EyeOff, AlertCircle, FileText } from 'lucide-react';
 
 const SESSION_KEY = 'tallyview_site_unlocked';
@@ -16,7 +17,8 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const pathname = usePathname();
-  const isPublicRoute = pathname === '/' || pathname === '/login' || pathname === '/onboarding' || pathname.startsWith('/case-files');
+  const { appUser } = useAuth();
+  const isPublicRoute = pathname === '/' || pathname === '/login' || pathname.startsWith('/case-files');
 
   // Check sessionStorage on mount
   useEffect(() => {
@@ -63,7 +65,8 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
     }
   };
 
-  if (isPublicRoute) {
+  // Bypass gate for public routes and authenticated Supabase users
+  if (isPublicRoute || appUser) {
     return <>{children}</>;
   }
 

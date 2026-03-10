@@ -11,8 +11,14 @@ export async function POST() {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const existing = await prisma.user.findUnique({
-      where: { supabaseId: supabaseUser.id },
+    // Check by supabaseId first, then fall back to email (handles re-auth scenarios)
+    const existing = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { supabaseId: supabaseUser.id },
+          { email: supabaseUser.email! },
+        ],
+      },
       include: {
         memberships: {
           include: { org: true },
@@ -21,6 +27,13 @@ export async function POST() {
     });
 
     if (existing) {
+      // Update supabaseId if it changed (e.g. user re-registered)
+      if (existing.supabaseId !== supabaseUser.id) {
+        await prisma.user.update({
+          where: { id: existing.id },
+          data: { supabaseId: supabaseUser.id },
+        });
+      }
       return NextResponse.json({ user: existing });
     }
 

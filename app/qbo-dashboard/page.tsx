@@ -1,16 +1,21 @@
 'use client';
 
 import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { QBOConnect } from '@/components/qbo/qbo-connect';
 import { TransactionsTable } from '@/components/qbo/transactions-table';
 import { AccountsSummary } from '@/components/qbo/accounts-summary';
+import { LogOut } from 'lucide-react';
 
 export default function QBODashboard() {
   const [refreshKey, setRefreshKey] = useState(0);
+  const { appUser, signOut } = useAuth();
 
   const handleSyncComplete = () => {
     setRefreshKey((k) => k + 1);
   };
+
+  const orgName = appUser?.memberships?.[0]?.org?.name;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -22,15 +27,21 @@ export default function QBODashboard() {
             </div>
             <div>
               <h1 className="text-lg font-bold text-gray-900">Tallyview</h1>
-              <p className="text-xs text-gray-500">QuickBooks Integration</p>
+              <p className="text-xs text-gray-500">{orgName || 'QuickBooks Integration'}</p>
             </div>
           </div>
-          <a
-            href="/"
-            className="text-sm text-gray-500 transition-colors hover:text-gray-700"
-          >
-            Back to Home
-          </a>
+          <div className="flex items-center gap-4">
+            {appUser && (
+              <span className="text-xs text-gray-500">{appUser.email}</span>
+            )}
+            <button
+              onClick={async () => { await signOut(); window.location.href = '/login'; }}
+              className="flex items-center gap-1.5 text-sm text-gray-500 transition-colors hover:text-gray-700"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              Sign out
+            </button>
+          </div>
         </div>
       </header>
 
