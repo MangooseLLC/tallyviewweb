@@ -274,7 +274,7 @@ export default function Home() {
                 </li>
                 <li>
                   <a
-                    href="mailto:support@tallyview.org"
+                    href="mailto:support@tallyview.com"
                     className="text-sm text-slate-500 transition hover:text-brand-navy"
                   >
                     Contact Support
