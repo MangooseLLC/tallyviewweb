@@ -48,13 +48,24 @@ export async function getUserOrg(): Promise<OrgResult> {
       return { org: user.memberships[0].org };
     }
 
-    // Unauthenticated fallback: grab the first org with a QBO connection
+    // Unauthenticated fallback — only select non-sensitive fields
     const org = await prisma.organization.findFirst({
       where: { qboRealmId: { not: null } },
       orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        name: true,
+        qboRealmId: true,
+        lastSyncedAt: true,
+        chainAddress: true,
+      },
     });
 
-    return { org };
+    return {
+      org: org
+        ? { ...org, accessToken: null, refreshToken: null, tokenExpiresAt: null }
+        : null,
+    };
   } catch (error) {
     console.error('getUserOrg error:', error);
     return { org: null, error: 'Failed to resolve organization' };

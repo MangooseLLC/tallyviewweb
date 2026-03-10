@@ -12,10 +12,10 @@ export async function GET(request: NextRequest) {
     const realmId = searchParams.get('realmId');
     const errorParam = searchParams.get('error');
 
-    // Determine redirect base: authenticated users go to /onboarding, others to /qbo-dashboard
+    // Determine redirect base: authenticated users go to /onboarding, others to /quickbooks
     const supabase = await createClient();
     const { data: { user: supabaseUser } } = await supabase.auth.getUser();
-    const redirectBase = supabaseUser ? '/onboarding' : '/qbo-dashboard';
+    const redirectBase = supabaseUser ? '/onboarding' : '/quickbooks';
 
     if (errorParam) {
       console.error('OAuth error from Intuit:', errorParam);
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
     console.error('OAuth callback error:', error);
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    const redirectBase = user ? '/onboarding' : '/qbo-dashboard';
+    const redirectBase = user ? '/onboarding' : '/quickbooks';
     return NextResponse.redirect(
       new URL(
         `${redirectBase}?error=callback_failed&details=${encodeURIComponent(

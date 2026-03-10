@@ -11,6 +11,8 @@ import {
   Brain,
   FileText,
   AlertTriangle,
+  Shield,
+  ExternalLink,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -62,6 +64,19 @@ interface ClassifyResult {
   details?: string;
 }
 
+interface AttestResult {
+  success: boolean;
+  alreadyAttested?: boolean;
+  year?: number;
+  month?: number;
+  merkleRoot?: string;
+  txHash?: string;
+  explorerUrl?: string | null;
+  blockNumber?: number;
+  error?: string;
+  details?: string;
+}
+
 export function QBOConnect({ onSyncComplete }: { onSyncComplete?: () => void }) {
   const [status, setStatus] = useState<ConnectionStatus | null>(null);
   const [syncing, setSyncing] = useState(false);
@@ -69,6 +84,8 @@ export function QBOConnect({ onSyncComplete }: { onSyncComplete?: () => void }) 
   const [syncSteps, setSyncSteps] = useState<SyncStep[]>([]);
   const [classifying, setClassifying] = useState(false);
   const [classifyResult, setClassifyResult] = useState<ClassifyResult | null>(null);
+  const [attesting, setAttesting] = useState(false);
+  const [attestResult, setAttestResult] = useState<AttestResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const fetchStatus = useCallback(async () => {
@@ -210,6 +227,25 @@ export function QBOConnect({ onSyncComplete }: { onSyncComplete?: () => void }) 
       setError('Classification failed. Check console for details.');
     } finally {
       setClassifying(false);
+    }
+  };
+
+  const handleAttest = async () => {
+    setAttesting(true);
+    setAttestResult(null);
+    setError(null);
+    try {
+      const res = await fetch('/api/chain/attest', { method: 'POST' });
+      const data: AttestResult = await res.json();
+      if (data.error) {
+        setError(data.details || data.error);
+      } else {
+        setAttestResult(data);
+      }
+    } catch {
+      setError('Attestation failed. Check console for details.');
+    } finally {
+      setAttesting(false);
     }
   };
 
@@ -358,16 +394,30 @@ export function QBOConnect({ onSyncComplete }: { onSyncComplete?: () => void }) 
                   Reclassify All
                 </button>
                 {((status?.classifiedCount ?? 0) > 0 || classifyResult?.success) && (
-                  <Link
-                    href="/990"
-                    className={cn(
-                      'inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors',
-                      'border border-gray-300 text-gray-700 hover:bg-gray-50'
-                    )}
-                  >
-                    <FileText className="h-4 w-4" />
-                    View 990
-                  </Link>
+                  <>
+                    <Link
+                      href="/990"
+                      className={cn(
+                        'inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors',
+                        'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                      )}
+                    >
+                      <FileText className="h-4 w-4" />
+                      View 990
+                    </Link>
+                    <button
+                      onClick={handleAttest}
+                      disabled={attesting || syncing || classifying}
+                      className={cn(
+                        'inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors',
+                        'bg-emerald-600 text-white hover:bg-emerald-700',
+                        'disabled:opacity-50 disabled:cursor-not-allowed'
+                      )}
+                    >
+                      <Shield className={cn('h-4 w-4', attesting && 'animate-pulse')} />
+                      {attesting ? 'Attesting...' : 'Attest to Blockchain'}
+                    </button>
+                  </>
                 )}
               </>
             )}
@@ -464,6 +514,51 @@ export function QBOConnect({ onSyncComplete }: { onSyncComplete?: () => void }) 
               <AlertCircle className="h-3.5 w-3.5" />
               {classifyResult.failedBatches} batch(es) failed — some transactions may be unclassified
             </div>
+          )}
+        </div>
+      )}
+
+      {attestResult?.success && (
+        <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+          <div className="flex items-center gap-2">
+            <Shield className="h-5 w-5 text-emerald-700" />
+            <p className="text-sm font-semibold text-emerald-800">
+              {attestResult.alreadyAttested
+                ? 'Already attested on-chain'
+                : 'Successfully attested to Avalanche'}
+            </p>
+          </div>
+          <div className="mt-2 space-y-1 text-xs text-emerald-700">
+            <p>
+              <span className="font-medium">Period:</span>{' '}
+              {attestResult.year}-{String(attestResult.month).padStart(2, '0')}
+            </p>
+            <p className="break-all">
+              <span className="font-medium">Merkle Root:</span>{' '}
+              <code className="text-[11px]">{attestResult.merkleRoot}</code>
+            </p>
+            {attestResult.txHash && (
+              <p className="break-all">
+                <span className="font-medium">Tx Hash:</span>{' '}
+                <code className="text-[11px]">{attestResult.txHash}</code>
+              </p>
+            )}
+            {attestResult.blockNumber && (
+              <p>
+                <span className="font-medium">Block:</span> {attestResult.blockNumber}
+              </p>
+            )}
+          </div>
+          {attestResult.explorerUrl && (
+            <a
+              href={attestResult.explorerUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-1.5 rounded-md bg-emerald-100 px-3 py-1.5 text-xs font-medium text-emerald-800 transition-colors hover:bg-emerald-200"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              View on Avalanche Explorer
+            </a>
           )}
         </div>
       )}

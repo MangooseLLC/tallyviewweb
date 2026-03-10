@@ -106,7 +106,7 @@ export function Form990Content({
           <p className="text-sm text-gray-500 mt-0.5">{orgName} &mdash; Tax Year 2025</p>
         </div>
         <Link
-          href="/qbo-dashboard"
+          href="/quickbooks"
           className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
         >
           <ArrowLeft className="h-3.5 w-3.5" />

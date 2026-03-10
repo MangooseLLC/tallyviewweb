@@ -93,4 +93,35 @@ export const auditLedgerAbi = [
     outputs: [{ name: '', type: 'bool' }],
     stateMutability: 'view',
   },
+  {
+    type: 'function',
+    name: 'setAvalancheMode',
+    inputs: [{ name: 'enabled', type: 'bool' }],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'submitAudit',
+    inputs: [
+      { name: 'org', type: 'address' },
+      { name: 'year', type: 'uint16' },
+      { name: 'month', type: 'uint8' },
+      { name: 'merkleRoot', type: 'bytes32' },
+      { name: 'schemaHash', type: 'bytes32' },
+    ],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'registerOrganization',
+    inputs: [
+      { name: 'org', type: 'address' },
+      { name: 'name', type: 'string' },
+      { name: 'einHash', type: 'bytes32' },
+    ],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
 ] as const;

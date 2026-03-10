@@ -9,6 +9,7 @@ import {
   LayoutDashboard, FileText, BarChart3, ClipboardCheck, AlertTriangle,
   Lock, Settings, Building2, GitCompare, FileBarChart, Map, Search,
   Network, Microscope, Briefcase, Database, ChevronLeft, ChevronRight,
+  Link2,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -29,6 +30,7 @@ const iconMap: Record<string, React.ReactNode> = {
   Microscope: <Microscope className="h-4 w-4" />,
   Briefcase: <Briefcase className="h-4 w-4" />,
   Database: <Database className="h-4 w-4" />,
+  Link2: <Link2 className="h-4 w-4" />,
 };
 
 function TallyviewIcon({ className }: { className?: string }) {
@@ -40,13 +42,14 @@ function TallyviewIcon({ className }: { className?: string }) {
 }
 
 export function Sidebar() {
-  const { currentPersona } = useAuth();
+  const { currentPersona, appUser } = useAuth();
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
 
-  if (!currentPersona) return null;
+  if (!currentPersona && !appUser) return null;
 
-  const navItems = NAV_ITEMS[currentPersona.role] || [];
+  const role = currentPersona?.role ?? 'nonprofit';
+  const navItems = NAV_ITEMS[role] || [];
 
   return (
     <aside className={cn(

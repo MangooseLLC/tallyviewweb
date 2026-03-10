@@ -385,7 +385,7 @@ export default function OnboardingPage() {
                 )}
               </div>
               <button
-                onClick={() => router.push('/qbo-dashboard')}
+                onClick={() => router.push('/dashboard')}
                 className="w-full py-3 rounded-xl bg-brand-gold text-brand-navy font-semibold text-sm transition-all hover:bg-brand-gold-light flex items-center justify-center gap-2"
               >
                 Go to Dashboard

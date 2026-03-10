@@ -9,7 +9,9 @@ import { OnchainPipelineStatus } from '@/components/shared/OnchainPipelineStatus
 import { RevenueChart } from '@/components/charts/RevenueChart';
 import { ExpenseBreakdownChart } from '@/components/charts/ExpenseBreakdownChart';
 import { formatCurrency } from '@/lib/utils/formatters';
-import { CheckCircle, Clock, ShieldCheck, FileText, AlertTriangle } from 'lucide-react';
+import { Clock, ShieldCheck, FileText, AlertTriangle, Link2 } from 'lucide-react';
+import type { DashboardOrg } from '@/lib/qbo-financials';
+import Link from 'next/link';
 
 interface ChainData {
   attestation: AttestationData | null;
@@ -22,13 +24,37 @@ interface ChainData {
 
 interface NonprofitDashboardContentProps {
   chainData: ChainData;
+  orgData?: DashboardOrg | null;
 }
 
-export function NonprofitDashboardContent({ chainData }: NonprofitDashboardContentProps) {
-  const org = getNonprofitById('org-bright-futures')!;
-  const anomalies = getAnomaliesByOrg('org-bright-futures').filter(a => a.status !== 'Resolved').slice(0, 4);
+export function NonprofitDashboardContent({ chainData, orgData }: NonprofitDashboardContentProps) {
+  const isRealUser = !!orgData;
 
-  const ytdFinancials = org.financials.slice(-12);
+  const demoOrg = isRealUser ? null : getNonprofitById('org-bright-futures')!;
+  const anomalies = isRealUser ? [] : getAnomaliesByOrg('org-bright-futures').filter(a => a.status !== 'Resolved').slice(0, 4);
+
+  const resolved: DashboardOrg = orgData ?? {
+    name: demoOrg!.name,
+    revenueYTD: demoOrg!.revenueYTD,
+    expensesYTD: demoOrg!.expensesYTD,
+    netAssetsTotal: demoOrg!.netAssetsTotal,
+    cashPosition: demoOrg!.financials[demoOrg!.financials.length - 1]?.cashPosition ?? 0,
+    cashReserveMonths: demoOrg!.cashReserveMonths,
+    programExpenseRatio: demoOrg!.programExpenseRatio,
+    managementExpenseRatio: demoOrg!.managementExpenseRatio,
+    fundraisingExpenseRatio: demoOrg!.fundraisingExpenseRatio,
+    financials: demoOrg!.financials,
+    restrictedFunds: demoOrg!.restrictedFunds,
+  };
+
+  const {
+    name: orgName, revenueYTD, expensesYTD, netAssetsTotal,
+    cashPosition, cashReserveMonths, financials,
+    programExpenseRatio, managementExpenseRatio, fundraisingExpenseRatio,
+    restrictedFunds,
+  } = resolved;
+
+  const ytdFinancials = financials.slice(-12);
   const programTotal = ytdFinancials.reduce((s, f) => s + f.expenses.program, 0);
   const mgmtTotal = ytdFinancials.reduce((s, f) => s + f.expenses.management, 0);
   const fundTotal = ytdFinancials.reduce((s, f) => s + f.expenses.fundraising, 0);
@@ -41,12 +67,13 @@ export function NonprofitDashboardContent({ chainData }: NonprofitDashboardConte
     Math.ceil((filingDeadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
   );
 
+  const chainAvailable = complianceSummary.live || !isRealUser;
   const complianceScore = complianceSummary.live
     ? `${complianceSummary.activeRules} rules`
-    : '92/100';
+    : isRealUser ? '—' : '92/100';
   const complianceSubtitle = complianceSummary.live
     ? `${complianceSummary.totalViolations} violations · ${complianceSummary.overdueDeadlines} overdue`
-    : 'Static data';
+    : isRealUser ? 'Coming soon' : 'Static data';
 
   return (
     <div className="space-y-6 max-w-7xl">
@@ -54,9 +81,20 @@ export function NonprofitDashboardContent({ chainData }: NonprofitDashboardConte
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Bright Futures Youth Services — Financial Overview</p>
+          <p className="text-sm text-gray-500 mt-0.5">{orgName} — Financial Overview</p>
         </div>
-        <TallyviewVerifiedBadge size="md" attestation={attestation} />
+        <div className="flex items-center gap-3">
+          {isRealUser && (
+            <Link
+              href="/quickbooks"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 shadow-sm transition-colors hover:bg-gray-50 hover:text-gray-900"
+            >
+              <Link2 className="h-3.5 w-3.5" />
+              QuickBooks
+            </Link>
+          )}
+          <TallyviewVerifiedBadge size="md" attestation={attestation} />
+        </div>
       </div>
 
       {/* Top Stats */}
@@ -79,8 +117,8 @@ export function NonprofitDashboardContent({ chainData }: NonprofitDashboardConte
         />
         <StatCard
           title="Anomalies"
-          value={anomalySummary.live ? anomalySummary.total.toString() : 'N/A'}
-          subtitle={anomalySummary.live ? `${anomalySummary.open} open · ${anomalySummary.critical} critical` : 'Chain unavailable'}
+          value={anomalySummary.live ? anomalySummary.total.toString() : '—'}
+          subtitle={anomalySummary.live ? `${anomalySummary.open} open · ${anomalySummary.critical} critical` : isRealUser ? 'Coming soon' : 'Chain unavailable'}
           icon={<AlertTriangle className="h-5 w-5" />}
           variant={anomalySummary.critical > 0 ? 'danger' : anomalySummary.open > 0 ? 'warning' : 'success'}
         />
@@ -102,28 +140,28 @@ export function NonprofitDashboardContent({ chainData }: NonprofitDashboardConte
             <div className="grid grid-cols-3 gap-4 mb-5">
               <div>
                 <p className="text-[11px] text-gray-500">Total Revenue YTD</p>
-                <p className="text-lg font-bold text-gray-900">{formatCurrency(org.revenueYTD)}</p>
+                <p className="text-lg font-bold text-gray-900">{formatCurrency(revenueYTD)}</p>
               </div>
               <div>
                 <p className="text-[11px] text-gray-500">Total Expenses YTD</p>
-                <p className="text-lg font-bold text-gray-900">{formatCurrency(org.expensesYTD)}</p>
+                <p className="text-lg font-bold text-gray-900">{formatCurrency(expensesYTD)}</p>
               </div>
               <div>
                 <p className="text-[11px] text-gray-500">Net Assets</p>
-                <p className="text-lg font-bold text-gray-900">{formatCurrency(org.netAssetsTotal)}</p>
+                <p className="text-lg font-bold text-gray-900">{formatCurrency(netAssetsTotal)}</p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4 mb-5">
               <div>
                 <p className="text-[11px] text-gray-500">Cash Position</p>
-                <p className="text-base font-semibold text-gray-900">$847,201</p>
+                <p className="text-base font-semibold text-gray-900">{formatCurrency(cashPosition)}</p>
               </div>
               <div>
                 <p className="text-[11px] text-gray-500">Months of Operating Reserve</p>
-                <p className="text-base font-semibold text-gray-900">{org.cashReserveMonths}</p>
+                <p className="text-base font-semibold text-gray-900">{cashReserveMonths}</p>
               </div>
             </div>
-            <RevenueChart data={org.financials} height={200} />
+            <RevenueChart data={financials} height={200} />
           </div>
 
           {/* Functional Expense Breakdown */}
@@ -136,9 +174,9 @@ export function NonprofitDashboardContent({ chainData }: NonprofitDashboardConte
               program={programTotal}
               management={mgmtTotal}
               fundraising={fundTotal}
-              programRatio={org.programExpenseRatio}
-              managementRatio={org.managementExpenseRatio}
-              fundraisingRatio={org.fundraisingExpenseRatio}
+              programRatio={programExpenseRatio}
+              managementRatio={managementExpenseRatio}
+              fundraisingRatio={fundraisingExpenseRatio}
             />
           </div>
         </div>
@@ -149,6 +187,9 @@ export function NonprofitDashboardContent({ chainData }: NonprofitDashboardConte
           <div className="rounded-lg border bg-white p-5 shadow-sm">
             <h3 className="text-sm font-semibold text-gray-900 mb-3">Recent Anomaly Alerts</h3>
             <div className="space-y-2">
+              {anomalies.length === 0 && (
+                <p className="text-xs text-gray-400 py-3 text-center">No anomaly alerts</p>
+              )}
               {anomalies.map(anomaly => (
                 <AnomalyAlertCard key={anomaly.id} anomaly={anomaly} compact />
               ))}
@@ -159,7 +200,10 @@ export function NonprofitDashboardContent({ chainData }: NonprofitDashboardConte
           <div className="rounded-lg border bg-white p-5 shadow-sm">
             <h3 className="text-sm font-semibold text-gray-900 mb-3">Restricted Fund Status</h3>
             <div className="space-y-3">
-              {org.restrictedFunds.slice(0, 3).map(fund => (
+              {restrictedFunds.length === 0 && (
+                <p className="text-xs text-gray-400 py-3 text-center">No restricted funds tracked yet</p>
+              )}
+              {restrictedFunds.slice(0, 3).map(fund => (
                 <div key={fund.id} className="border rounded-md p-3">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-medium text-gray-900">{fund.funder}</p>

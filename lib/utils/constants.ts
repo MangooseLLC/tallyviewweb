@@ -47,6 +47,7 @@ export const ALLOWED_WAITLIST_ROLES: string[] = WAITLIST_ROLES.filter(
 export const NAV_ITEMS = {
   nonprofit: [
     { label: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
+    { label: 'QuickBooks', href: '/quickbooks', icon: 'Link2' },
     { label: 'Progressive 990', href: '/990', icon: 'FileText' },
     { label: 'Board Reports', href: '/reports', icon: 'BarChart3' },
     { label: 'Audit Prep', href: '/audit-prep', icon: 'ClipboardCheck' },
