@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import {
   RefreshCw,
   CheckCircle2,
@@ -24,6 +25,7 @@ interface ConnectionStatus {
   lastSyncedAt?: string | null;
   transactionCount?: number;
   accountCount?: number;
+  classifiedCount?: number;
 }
 
 interface SyncResult {
@@ -355,8 +357,8 @@ export function QBOConnect({ onSyncComplete }: { onSyncComplete?: () => void }) 
                   <RefreshCw className="h-4 w-4" />
                   Reclassify All
                 </button>
-                {classifyResult?.success && (
-                  <a
+                {((status?.classifiedCount ?? 0) > 0 || classifyResult?.success) && (
+                  <Link
                     href="/990"
                     className={cn(
                       'inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors',
@@ -365,7 +367,7 @@ export function QBOConnect({ onSyncComplete }: { onSyncComplete?: () => void }) 
                   >
                     <FileText className="h-4 w-4" />
                     View 990
-                  </a>
+                  </Link>
                 )}
               </>
             )}

@@ -15,9 +15,10 @@ export async function GET() {
       });
     }
 
-    const [transactionCount, accountCount] = await Promise.all([
+    const [transactionCount, accountCount, classifiedCount] = await Promise.all([
       prisma.transaction.count({ where: { orgId: org.id } }),
       prisma.account.count({ where: { orgId: org.id } }),
+      prisma.transaction.count({ where: { orgId: org.id, irs990Category: { not: null } } }),
     ]);
 
     let tokenExpired =
@@ -51,6 +52,7 @@ export async function GET() {
       lastSyncedAt: org.lastSyncedAt,
       transactionCount,
       accountCount,
+      classifiedCount,
     });
   } catch (error) {
     console.error('Status check error:', error);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, FormEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -10,28 +10,20 @@ import { Lock, Eye, EyeOff, AlertCircle, FileText } from 'lucide-react';
 const SESSION_KEY = 'tallyview_site_unlocked';
 
 export default function PasswordGate({ children }: { children: React.ReactNode }) {
-  const [unlocked, setUnlocked] = useState(false);
+  const [unlocked, setUnlocked] = useState(() => {
+    try {
+      return sessionStorage.getItem(SESSION_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const pathname = usePathname();
   const { appUser } = useAuth();
   const isPublicRoute = pathname === '/' || pathname === '/login' || pathname.startsWith('/case-files');
-
-  // Check sessionStorage on mount
-  useEffect(() => {
-    try {
-      const stored = sessionStorage.getItem(SESSION_KEY);
-      if (stored === 'true') {
-        setUnlocked(true);
-      }
-    } catch {
-      // sessionStorage not available
-    }
-    setLoading(false);
-  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -65,21 +57,8 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
     }
   };
 
-  // Bypass gate for public routes and authenticated Supabase users
-  if (isPublicRoute || appUser) {
-    return <>{children}</>;
-  }
-
-  // Show nothing while checking session
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-brand-navy flex items-center justify-center">
-        <div className="h-8 w-8 border-2 border-brand-gold border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (unlocked) {
+  // Bypass gate for public routes, authenticated Supabase users, or unlocked sessions
+  if (isPublicRoute || appUser || unlocked) {
     return <>{children}</>;
   }
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import type { Section990 } from '@/lib/types';
 import type { FieldData } from '@/lib/pipeline/map990';
 import type { LatestAuditResult } from '@/lib/chain/reads';
@@ -18,6 +19,7 @@ import {
   Link as LinkIcon,
   Database,
   Shield,
+  ArrowLeft,
 } from 'lucide-react';
 
 interface Form990ContentProps {
@@ -98,9 +100,18 @@ export function Form990Content({
   return (
     <div className="space-y-6 max-w-7xl">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Form 990 Builder</h1>
-        <p className="text-sm text-gray-500 mt-0.5">{orgName} &mdash; Tax Year 2025</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Form 990 Builder</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{orgName} &mdash; Tax Year 2025</p>
+        </div>
+        <Link
+          href="/qbo-dashboard"
+          className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          QBO Dashboard
+        </Link>
       </div>
 
       {/* Data Sources Header */}

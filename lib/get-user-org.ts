@@ -10,6 +10,7 @@ interface OrgResult {
     refreshToken: string | null;
     tokenExpiresAt: Date | null;
     lastSyncedAt: Date | null;
+    chainAddress: string | null;
   } | null;
   error?: string;
 }
