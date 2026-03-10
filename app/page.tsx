@@ -290,7 +290,7 @@ export default function Home() {
               <ul className="mt-4 space-y-3">
                 <li>
                   <a
-                    href="https://x.com/tallyview"
+                    href="https://x.com/tallyviewcom"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-slate-500 transition hover:text-brand-navy"
@@ -300,7 +300,7 @@ export default function Home() {
                 </li>
                 <li>
                   <a
-                    href="https://linkedin.com/company/tallyview"
+                    href="https://www.linkedin.com/showcase/tallyview"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-slate-500 transition hover:text-brand-navy"
