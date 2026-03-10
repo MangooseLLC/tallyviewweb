@@ -16,7 +16,7 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const pathname = usePathname();
-  const isPublicRoute = pathname === '/' || pathname.startsWith('/case-files');
+  const isPublicRoute = pathname === '/' || pathname === '/login' || pathname.startsWith('/case-files');
 
   // Check sessionStorage on mount
   useEffect(() => {
