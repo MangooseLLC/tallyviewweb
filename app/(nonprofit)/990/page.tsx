@@ -6,6 +6,8 @@ import { Form990Content } from '@/components/nonprofit/Form990Content';
 import { prisma } from '@/lib/prisma';
 import type { Address } from 'viem';
 
+export const dynamic = 'force-dynamic';
+
 export default async function Form990Page() {
   const qboOrg = await prisma.organization.findFirst({
     where: { qboRealmId: { not: null } },
