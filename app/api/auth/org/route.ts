@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
+import { getSessionEmail } from '@/lib/auth-session';
 
 export async function PATCH(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    const { data: { user: supabaseUser }, error } = await supabase.auth.getUser();
-
-    if (error || !supabaseUser) {
+    const email = await getSessionEmail();
+    if (!email) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
@@ -17,7 +15,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const user = await prisma.user.findUnique({
-      where: { supabaseId: supabaseUser.id },
+      where: { email },
       include: { memberships: { where: { role: 'OWNER' }, take: 1 } },
     });
 

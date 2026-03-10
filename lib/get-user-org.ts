@@ -1,5 +1,5 @@
-import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
+import { getSessionEmail } from '@/lib/auth-session';
 
 interface OrgResult {
   org: {
@@ -16,19 +16,16 @@ interface OrgResult {
 }
 
 /**
- * Resolves the authenticated user's organization.
+ * Resolves the current session user's organization.
  * Falls back to findFirst for unauthenticated/demo mode.
  */
 export async function getUserOrg(): Promise<OrgResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user: supabaseUser },
-    } = await supabase.auth.getUser();
+    const email = await getSessionEmail();
 
-    if (supabaseUser) {
+    if (email) {
       const user = await prisma.user.findUnique({
-        where: { supabaseId: supabaseUser.id },
+        where: { email },
         include: {
           memberships: {
             include: { org: true },

@@ -1,22 +1,22 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
+import { setSessionEmailCookie } from '@/lib/auth-session';
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
-    const supabase = await createClient();
-    const { data: { user: supabaseUser }, error } = await supabase.auth.getUser();
-
-    if (error || !supabaseUser) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    const body = await request.json().catch(() => ({}));
+    const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+    if (!email || !email.includes('@')) {
+      return NextResponse.json({ error: 'A valid email is required' }, { status: 400 });
     }
 
-    // Check by supabaseId first, then fall back to email (handles re-auth scenarios)
+    const syntheticSupabaseId = `email:${email}`;
+
     const existing = await prisma.user.findFirst({
       where: {
         OR: [
-          { supabaseId: supabaseUser.id },
-          { email: supabaseUser.email! },
+          { supabaseId: syntheticSupabaseId },
+          { email },
         ],
       },
       include: {
@@ -27,29 +27,30 @@ export async function POST() {
     });
 
     if (existing) {
-      // Update supabaseId if it changed (e.g. user re-registered)
-      if (existing.supabaseId !== supabaseUser.id) {
+      if (existing.supabaseId !== syntheticSupabaseId) {
         await prisma.user.update({
           where: { id: existing.id },
-          data: { supabaseId: supabaseUser.id },
+          data: { supabaseId: syntheticSupabaseId },
         });
       }
-      return NextResponse.json({ user: existing, isNew: false });
+      const response = NextResponse.json({ user: existing, isNew: false });
+      setSessionEmailCookie(response, email);
+      return response;
     }
 
     const user = await prisma.$transaction(async (tx) => {
       const newUser = await tx.user.create({
         data: {
-          supabaseId: supabaseUser.id,
-          email: supabaseUser.email!,
-          name: supabaseUser.user_metadata?.full_name || null,
-          avatarUrl: supabaseUser.user_metadata?.avatar_url || null,
+          supabaseId: syntheticSupabaseId,
+          email,
+          name: null,
+          avatarUrl: null,
         },
       });
 
       const org = await tx.organization.create({
         data: {
-          name: `${supabaseUser.email!.split('@')[0]}'s Organization`,
+          name: `${email.split('@')[0]}'s Organization`,
         },
       });
 
@@ -71,7 +72,9 @@ export async function POST() {
       });
     });
 
-    return NextResponse.json({ user, isNew: true });
+    const response = NextResponse.json({ user, isNew: true });
+    setSessionEmailCookie(response, email);
+    return response;
   } catch (err) {
     console.error('Provision error:', err);
     return NextResponse.json({ error: 'Failed to provision user' }, { status: 500 });

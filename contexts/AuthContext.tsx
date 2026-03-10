@@ -3,8 +3,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { Persona } from '@/lib/types';
 import { personas } from '@/lib/data/personas';
-import { createClient } from '@/lib/supabase/client';
-import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface AppUser {
   id: string;
@@ -30,8 +28,7 @@ interface AuthContextType {
   login: (personaId: string) => void;
   logout: () => void;
   switchPersona: (personaId: string) => void;
-  sendOtp: (email: string) => Promise<{ error?: string }>;
-  verifyOtp: (email: string, code: string) => Promise<{ error?: string; isNewUser?: boolean }>;
+  continueWithEmail: (email: string) => Promise<{ error?: string; isNewUser?: boolean }>;
   signOut: () => Promise<void>;
 }
 
@@ -44,26 +41,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [appUser, setAppUser] = useState<AppUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const supabase = createClient();
-
   useEffect(() => {
     async function init() {
+      // Load session user first.
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          // Real auth session exists — clear any stale demo persona
+        const res = await fetch('/api/auth/user');
+        const data = await res.json();
+        if (data.user) {
+          setAppUser(data.user);
           try { localStorage.removeItem(PERSONA_KEY); } catch {}
-          const res = await fetch('/api/auth/user');
-          const data = await res.json();
-          if (data.user) {
-            setAppUser(data.user);
-            setIsLoading(false);
-            return;
-          }
+          setIsLoading(false);
+          return;
         }
-      } catch {
-        // Supabase check failed — fall through to demo
-      }
+      } catch {}
 
       // Fall back to demo persona
       try {
@@ -78,15 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     init();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
-      if (event === 'SIGNED_OUT') {
-        setAppUser(null);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // --- Demo persona methods ---
 
@@ -112,47 +94,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // --- Supabase OTP methods ---
-
-  const sendOtp = useCallback(async (email: string): Promise<{ error?: string }> => {
-    const { error } = await supabase.auth.signInWithOtp({ email });
-    if (error) return { error: error.message };
-    return {};
-  }, [supabase.auth]);
-
-  const verifyOtp = useCallback(async (email: string, code: string): Promise<{ error?: string; isNewUser?: boolean }> => {
-    const { error } = await supabase.auth.verifyOtp({
-      email,
-      token: code,
-      type: 'email',
-    });
-    if (error) return { error: error.message };
-
+  const continueWithEmail = useCallback(async (email: string): Promise<{ error?: string; isNewUser?: boolean }> => {
     setCurrentPersona(null);
     try { localStorage.removeItem(PERSONA_KEY); } catch {}
 
     try {
-      const res = await fetch('/api/auth/provision', { method: 'POST' });
+      const res = await fetch('/api/auth/provision', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
       if (!res.ok) {
-        return { error: 'Failed to set up your account. Please try again.' };
+        const data = await res.json().catch(() => ({}));
+        return { error: data.error || 'Failed to continue with email. Please try again.' };
       }
       const data = await res.json();
       if (!data.user) {
-        return { error: 'Failed to set up your account. Please try again.' };
+        return { error: 'Failed to continue with email. Please try again.' };
       }
       setAppUser(data.user);
       return { isNewUser: !!data.isNew };
     } catch {
       return { error: 'Network error during account setup. Please try again.' };
     }
-  }, [supabase.auth]);
+  }, []);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
+    await fetch('/api/auth/logout', { method: 'POST' });
     setAppUser(null);
     setCurrentPersona(null);
     try { localStorage.removeItem(PERSONA_KEY); } catch {}
-  }, [supabase.auth]);
+  }, []);
 
   const isDemoMode = currentPersona !== null && appUser === null;
   const isAuthenticated = appUser !== null || currentPersona !== null;
@@ -167,8 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       logout,
       switchPersona,
-      sendOtp,
-      verifyOtp,
+      continueWithEmail,
       signOut,
     }}>
       {children}
