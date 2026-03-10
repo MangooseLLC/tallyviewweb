@@ -137,13 +137,60 @@ export default function OnboardingPage() {
     setError('');
     try {
       const res = await fetch('/api/qbo/sync', { method: 'POST' });
-      const data: SyncResult = await res.json();
-      if (data.error) {
-        setError(data.details || data.error);
+
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.details || data.error || 'Sync failed');
+        setSyncing(false);
+        return;
+      }
+
+      const contentType = res.headers.get('content-type') || '';
+
+      // Handle SSE stream from sync endpoint
+      if (contentType.includes('text/event-stream')) {
+        const reader = res.body?.getReader();
+        if (!reader) { setError('Failed to read sync stream'); setSyncing(false); return; }
+
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let finalResult: SyncResult | null = null;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+            try {
+              const event = JSON.parse(line.slice(6));
+              if (event.type === 'complete') {
+                finalResult = { success: true, synced: event.synced };
+              } else if (event.type === 'error') {
+                setError(event.message);
+              }
+            } catch { /* skip malformed */ }
+          }
+        }
+
+        if (finalResult) {
+          setSyncResult(finalResult);
+          await fetchQboStatus();
+          setStep('done');
+        }
       } else {
-        setSyncResult(data);
-        await fetchQboStatus();
-        setStep('done');
+        // Fallback: plain JSON response
+        const data: SyncResult = await res.json();
+        if (data.error) {
+          setError(data.details || data.error);
+        } else {
+          setSyncResult(data);
+          await fetchQboStatus();
+          setStep('done');
+        }
       }
     } catch {
       setError('Sync failed');

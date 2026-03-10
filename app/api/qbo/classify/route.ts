@@ -1,27 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { classifyOrganization } from '@/lib/990/classify';
 import { invalidate990Cache } from '@/lib/pipeline/map990';
+import { getUserOrg } from '@/lib/get-user-org';
 
-// In-memory lock to prevent concurrent classification for the same org
 const activeClassifications = new Set<string>();
 
 export async function POST(request: NextRequest) {
   try {
-    // Auth: find connected org (same pattern as sync route)
-    const org = await prisma.organization.findFirst({
-      where: { qboRealmId: { not: null } },
-      orderBy: { createdAt: 'desc' },
-    });
+    const { org, error } = await getUserOrg();
 
     if (!org) {
       return NextResponse.json(
-        { error: 'No QuickBooks connection found. Sync data first.' },
+        { error: error || 'No QuickBooks connection found. Sync data first.' },
         { status: 400 }
       );
     }
 
-    // Concurrency lock
     if (activeClassifications.has(org.id)) {
       return NextResponse.json(
         { error: 'Classification already in progress for this organization.' },
@@ -29,7 +23,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Parse options from request body
     let force = false;
     try {
       const body = await request.json();

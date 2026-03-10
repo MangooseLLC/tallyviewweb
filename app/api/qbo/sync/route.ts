@@ -1,69 +1,58 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { syncOrganization } from '@/lib/qbo-sync';
-import { QBOClient } from '@/lib/qbo-client';
+import { getUserOrg } from '@/lib/get-user-org';
+import { syncOrganizationStreamed } from '@/lib/qbo-sync';
 
 export async function POST() {
   try {
-    let org = await prisma.organization.findFirst({
-      where: { qboRealmId: { not: null } },
-    });
-
-    if (!org && process.env.QBO_ACCESS_TOKEN && process.env.QBO_REALM_ID) {
-      const client = new QBOClient(
-        process.env.QBO_ACCESS_TOKEN,
-        process.env.QBO_REALM_ID
-      );
-
-      let companyName = 'Sandbox Company';
-      try {
-        const info = await client.getCompanyInfo();
-        companyName =
-          info?.CompanyInfo?.CompanyName || 'Sandbox Company';
-      } catch {
-        // fall through with default name
-      }
-
-      org = await prisma.organization.create({
-        data: {
-          name: companyName,
-          qboRealmId: process.env.QBO_REALM_ID,
-          accessToken: process.env.QBO_ACCESS_TOKEN,
-          refreshToken: process.env.QBO_REFRESH_TOKEN || 'manual-token',
-          tokenExpiresAt: new Date(Date.now() + 3600 * 1000),
-        },
-      });
-    }
+    const { org, error } = await getUserOrg();
 
     if (!org) {
-      return NextResponse.json(
+      return Response.json(
+        { error: error || 'No organization found. Please complete onboarding first.' },
+        { status: 400 }
+      );
+    }
+
+    if (!org.qboRealmId) {
+      return Response.json(
         { error: 'No QuickBooks connection found. Connect via OAuth first.' },
         { status: 400 }
       );
     }
 
-    // If using env token shortcut, update the token in case it changed
-    if (process.env.QBO_ACCESS_TOKEN) {
-      await prisma.organization.update({
-        where: { id: org.id },
-        data: {
-          accessToken: process.env.QBO_ACCESS_TOKEN,
-          tokenExpiresAt: new Date(Date.now() + 3600 * 1000),
-        },
-      });
-    }
+    const orgId = org.id;
 
-    const result = await syncOrganization(org.id);
+    const stream = new ReadableStream({
+      async start(controller) {
+        const send = (data: Record<string, unknown>) => {
+          controller.enqueue(
+            new TextEncoder().encode(`data: ${JSON.stringify(data)}\n\n`)
+          );
+        };
 
-    return NextResponse.json({
-      success: true,
-      orgId: org.id,
-      orgName: org.name,
-      synced: result,
+        try {
+          await syncOrganizationStreamed(orgId, send);
+        } catch (error) {
+          send({
+            type: 'error',
+            message:
+              error instanceof Error ? error.message : String(error),
+          });
+        } finally {
+          controller.close();
+        }
+      },
+    });
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
+      },
     });
   } catch (error) {
     console.error('Sync error:', error);
-    return NextResponse.json(
+    return Response.json(
       {
         error: 'Sync failed',
         details: error instanceof Error ? error.message : String(error),

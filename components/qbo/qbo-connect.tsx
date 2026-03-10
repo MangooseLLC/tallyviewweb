@@ -15,9 +15,11 @@ import { cn } from '@/lib/utils';
 
 interface ConnectionStatus {
   connected: boolean;
+  tokenExpired?: boolean;
   hasEnvTokens?: boolean;
   orgId?: string;
   orgName?: string;
+  qboCompanyName?: string | null;
   realmId?: string;
   lastSyncedAt?: string | null;
   transactionCount?: number;
@@ -38,6 +40,13 @@ interface SyncResult {
   details?: string;
 }
 
+interface SyncStep {
+  key: string;
+  label: string;
+  status: 'pending' | 'syncing' | 'done';
+  count?: number;
+}
+
 interface ClassifyResult {
   success: boolean;
   accountsMapped?: number;
@@ -55,6 +64,7 @@ export function QBOConnect({ onSyncComplete }: { onSyncComplete?: () => void }) 
   const [status, setStatus] = useState<ConnectionStatus | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
+  const [syncSteps, setSyncSteps] = useState<SyncStep[]>([]);
   const [classifying, setClassifying] = useState(false);
   const [classifyResult, setClassifyResult] = useState<ClassifyResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -88,16 +98,88 @@ export function QBOConnect({ onSyncComplete }: { onSyncComplete?: () => void }) 
   const handleSync = async () => {
     setSyncing(true);
     setSyncResult(null);
+    setSyncSteps([]);
     setError(null);
+
     try {
       const res = await fetch('/api/qbo/sync', { method: 'POST' });
-      const data: SyncResult = await res.json();
-      if (data.error) {
-        setError(data.details || data.error);
-      } else {
-        setSyncResult(data);
-        await fetchStatus();
-        onSyncComplete?.();
+
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.details || data.error || 'Sync failed');
+        setSyncing(false);
+        return;
+      }
+
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('text/event-stream')) {
+        const data = await res.json();
+        if (data.error) {
+          setError(data.details || data.error);
+        } else {
+          setSyncResult(data);
+          await fetchStatus();
+          onSyncComplete?.();
+        }
+        setSyncing(false);
+        return;
+      }
+
+      const reader = res.body?.getReader();
+      if (!reader) {
+        setError('Failed to read sync stream');
+        setSyncing(false);
+        return;
+      }
+
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          try {
+            const event = JSON.parse(line.slice(6));
+
+            if (event.type === 'start') {
+              setSyncSteps(
+                event.steps.map((key: string) => {
+                  const labels: Record<string, string> = {
+                    accounts: 'Chart of Accounts',
+                    invoices: 'Invoices',
+                    bills: 'Bills',
+                    purchases: 'Purchases',
+                    journalEntries: 'Journal Entries',
+                  };
+                  return { key, label: labels[key] || key, status: 'pending' };
+                })
+              );
+            } else if (event.type === 'step') {
+              setSyncSteps((prev) =>
+                prev.map((s) =>
+                  s.key === event.step
+                    ? { ...s, status: event.status, count: event.count ?? s.count }
+                    : s
+                )
+              );
+            } else if (event.type === 'complete') {
+              setSyncResult({ success: true, synced: event.synced });
+              await fetchStatus();
+              onSyncComplete?.();
+            } else if (event.type === 'error') {
+              setError(event.message);
+            }
+          } catch {
+            // skip malformed SSE lines
+          }
+        }
       }
     } catch {
       setError('Sync failed. Check console for details.');
@@ -142,23 +224,32 @@ export function QBOConnect({ onSyncComplete }: { onSyncComplete?: () => void }) 
             QuickBooks Connection
           </h2>
           <p className="mt-1 text-sm text-gray-500">
-            {status?.connected
-              ? 'Connected to QuickBooks Online sandbox'
-              : 'Connect your QuickBooks Online account to sync financial data'}
+            {status?.connected && status?.tokenExpired
+              ? 'QuickBooks session expired — reconnect to continue syncing'
+              : status?.connected
+                ? 'Connected to QuickBooks Online'
+                : 'Connect your QuickBooks Online account to sync financial data'}
           </p>
         </div>
         <div
           className={cn(
             'flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium',
-            status?.connected
+            status?.connected && !status?.tokenExpired
               ? 'bg-green-50 text-green-700'
-              : 'bg-gray-100 text-gray-500'
+              : status?.connected && status?.tokenExpired
+                ? 'bg-amber-50 text-amber-700'
+                : 'bg-gray-100 text-gray-500'
           )}
         >
-          {status?.connected ? (
+          {status?.connected && !status?.tokenExpired ? (
             <>
               <CheckCircle2 className="h-3.5 w-3.5" />
               Connected
+            </>
+          ) : status?.connected && status?.tokenExpired ? (
+            <>
+              <AlertTriangle className="h-3.5 w-3.5" />
+              Token Expired
             </>
           ) : (
             <>
@@ -172,15 +263,18 @@ export function QBOConnect({ onSyncComplete }: { onSyncComplete?: () => void }) 
       {status?.connected && (
         <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div className="rounded-lg bg-gray-50 p-3">
-            <p className="text-xs text-gray-500">Company</p>
+            <p className="text-xs text-gray-500">QBO Company</p>
             <p className="mt-0.5 text-sm font-medium text-gray-900">
-              {status.orgName}
+              {status.qboCompanyName || 'Unknown'}
+            </p>
+            <p className="mt-0.5 text-xs text-gray-400">
+              Realm {status.realmId}
             </p>
           </div>
           <div className="rounded-lg bg-gray-50 p-3">
-            <p className="text-xs text-gray-500">Realm ID</p>
-            <p className="mt-0.5 text-sm font-mono text-gray-900">
-              {status.realmId}
+            <p className="text-xs text-gray-500">Tallyview Org</p>
+            <p className="mt-0.5 text-sm font-medium text-gray-900">
+              {status.orgName}
             </p>
           </div>
           <div className="rounded-lg bg-gray-50 p-3">
@@ -201,7 +295,23 @@ export function QBOConnect({ onSyncComplete }: { onSyncComplete?: () => void }) 
       )}
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
-        {status?.connected || status?.hasEnvTokens ? (
+        {status?.connected && status?.tokenExpired ? (
+          <>
+            <button
+              onClick={handleConnect}
+              className={cn(
+                'inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors',
+                'bg-amber-600 text-white hover:bg-amber-700'
+              )}
+            >
+              <Link2 className="h-4 w-4" />
+              Reconnect QuickBooks
+            </button>
+            <span className="text-xs text-amber-600">
+              Your session expired. Reconnect to get a fresh token.
+            </span>
+          </>
+        ) : (status?.connected && !status?.tokenExpired) || status?.hasEnvTokens ? (
           <>
             <button
               onClick={handleSync}
@@ -274,7 +384,45 @@ export function QBOConnect({ onSyncComplete }: { onSyncComplete?: () => void }) 
         )}
       </div>
 
-      {syncResult?.success && syncResult.synced && (
+      {syncing && syncSteps.length > 0 && (
+        <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
+          <p className="mb-3 text-sm font-medium text-blue-900">
+            Syncing from QuickBooks...
+          </p>
+          <div className="space-y-2">
+            {syncSteps.map((step) => (
+              <div key={step.key} className="flex items-center gap-3">
+                <div className="flex h-5 w-5 items-center justify-center">
+                  {step.status === 'done' ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  ) : step.status === 'syncing' ? (
+                    <RefreshCw className="h-4 w-4 animate-spin text-blue-600" />
+                  ) : (
+                    <div className="h-2 w-2 rounded-full bg-gray-300" />
+                  )}
+                </div>
+                <span
+                  className={cn(
+                    'text-sm',
+                    step.status === 'done' && 'text-green-800',
+                    step.status === 'syncing' && 'font-medium text-blue-800',
+                    step.status === 'pending' && 'text-gray-400'
+                  )}
+                >
+                  {step.label}
+                </span>
+                {step.status === 'done' && step.count !== undefined && (
+                  <span className="ml-auto text-xs font-medium text-green-700">
+                    {step.count} records
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {!syncing && syncResult?.success && syncResult.synced && (
         <div className="mt-4 rounded-lg border border-green-200 bg-green-50 p-3">
           <p className="text-sm font-medium text-green-800">
             Sync completed successfully

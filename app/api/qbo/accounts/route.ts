@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getUserOrg } from '@/lib/get-user-org';
 
 export async function GET() {
   try {
-    const org = await prisma.organization.findFirst({
-      where: { qboRealmId: { not: null } },
-      orderBy: { createdAt: 'desc' },
-    });
+    const { org } = await getUserOrg();
     if (!org) {
       return NextResponse.json({ accounts: [], grouped: {} });
     }
