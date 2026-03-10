@@ -9,7 +9,6 @@ import {
   Radar,
   Lock,
 } from 'lucide-react';
-import WaitlistForm from '@/components/landing/WaitlistForm';
 import ArchitectureDiagram from '@/components/landing/ArchitectureDiagram';
 import VerifiedBadge from '@/components/landing/VerifiedBadge';
 import InstitutionalProof from '@/components/landing/InstitutionalProof';
@@ -55,11 +54,14 @@ export default function Home() {
                 into 990 categories, catches errors early, and keeps an independent
                 compliance record that funders and auditors can check.
               </p>
-              <div className="mt-8 max-w-xl">
-                <WaitlistForm buttonLabel="Join waitlist" />
-                <p className="mt-4 text-xs text-slate-300">
-                  Early access for nonprofits and the foundations that fund them.
-                </p>
+              <div className="mt-8 flex max-w-xl gap-3">
+                <Link
+                  href="/login"
+                  className="inline-flex items-center gap-2 rounded-xl bg-brand-gold px-5 py-3 text-sm font-semibold text-brand-navy transition hover:bg-brand-gold-light"
+                >
+                  Get Started
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
               </div>
             </div>
 
@@ -217,18 +219,7 @@ export default function Home() {
 
       <footer className="bg-brand-navy text-white">
         <div className="mx-auto w-full max-w-6xl px-6 py-12">
-          <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-            <div>
-              <h3 className="text-2xl font-semibold">
-                Request early access.
-              </h3>
-              <p className="mt-3 text-sm text-slate-300">
-                We are onboarding nonprofits now. Leave your email and we will send you a demo.
-              </p>
-            </div>
-            <WaitlistForm buttonLabel="Join waitlist" />
-          </div>
-          <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-slate-400 md:flex-row">
+          <div className="flex flex-col items-center justify-between gap-3 text-xs text-slate-400 md:flex-row">
             <p>Tallyview &copy; 2026</p>
             <Link href="/case-files" className="hover:text-brand-gold">
               Tallyview Case Files
