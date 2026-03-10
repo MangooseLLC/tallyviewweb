@@ -31,7 +31,7 @@ interface AuthContextType {
   logout: () => void;
   switchPersona: (personaId: string) => void;
   sendOtp: (email: string) => Promise<{ error?: string }>;
-  verifyOtp: (email: string, code: string) => Promise<{ error?: string }>;
+  verifyOtp: (email: string, code: string) => Promise<{ error?: string; isNewUser?: boolean }>;
   signOut: () => Promise<void>;
 }
 
@@ -120,7 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return {};
   }, [supabase.auth]);
 
-  const verifyOtp = useCallback(async (email: string, code: string): Promise<{ error?: string }> => {
+  const verifyOtp = useCallback(async (email: string, code: string): Promise<{ error?: string; isNewUser?: boolean }> => {
     const { error } = await supabase.auth.verifyOtp({
       email,
       token: code,
@@ -128,18 +128,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     if (error) return { error: error.message };
 
-    // Clear demo state
     setCurrentPersona(null);
     try { localStorage.removeItem(PERSONA_KEY); } catch {}
 
-    // Provision user in Prisma
-    const res = await fetch('/api/auth/provision', { method: 'POST' });
-    const data = await res.json();
-    if (data.user) {
+    try {
+      const res = await fetch('/api/auth/provision', { method: 'POST' });
+      if (!res.ok) {
+        return { error: 'Failed to set up your account. Please try again.' };
+      }
+      const data = await res.json();
+      if (!data.user) {
+        return { error: 'Failed to set up your account. Please try again.' };
+      }
       setAppUser(data.user);
+      return { isNewUser: !!data.isNew };
+    } catch {
+      return { error: 'Network error during account setup. Please try again.' };
     }
-
-    return {};
   }, [supabase.auth]);
 
   const signOut = useCallback(async () => {

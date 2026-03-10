@@ -76,48 +76,48 @@ Offchain: Raw accounting data (Supabase/Prisma), AI detection models and logic (
 ## MoSCoW FRAMEWORK — FEATURE PRIORITIZATION
 
 **Must Have (implemented):**
-- AuditLedger smart contract: immutable Merkle root submissions, organization identity (address-based with human-readable name resolution), tamper-proof financial timeline, TxAllowList integration for future L1. Foundation contract all other contracts reference. Deployed to Fuji C-Chain with UUPS proxy.
-- ComplianceEngine smart contract: compliance rule creation and enforcement (spending caps, overhead ratios, filing deadlines), automated status transitions (Compliant → AtRisk → Violated), permanent violation records. Deployed to Fuji C-Chain with UUPS proxy.
-- AnomalyRegistry smart contract: AI-detected findings recorded onchain with severity and confidence scores, forward-only status lifecycle (New → Reviewed → Resolved/Escalated), SYSTEM_ROLE separation of powers, immutable timestamps. Deployed to Fuji C-Chain with UUPS proxy.
-- EntityGraph smart contract: cross-organizational relationship mapping (people, vendors, addresses as identity hashes), onchain graph queries (getSharedEntities), fraud pattern detection substrate. Deployed to Fuji C-Chain with UUPS proxy.
-- EvidenceVault smart contract: investigation evidence metadata with chain-of-custody, per-case access control, forward-only sealing, full investigation stage tracking (Tip → Analysis → Discovery → Filing → Recovery → Closed). Deployed to Fuji C-Chain with UUPS proxy.
-- Four-persona SaaS dashboard: nonprofit compliance view (990, anomalies, restricted funds, audit prep, reports), foundation portfolio view (grantee health, benchmarking, risk alerts), regulator risk map (jurisdiction dashboard, entity analysis, investigations), investigator workbench (cases, fraud typologies, tip intake). Built with Next.js App Router, Tailwind CSS, Radix UI.
-- QuickBooks Online integration: full OAuth flow, token management, data sync (accounts, invoices, bills, purchases, journal entries), QBO dashboard with accounts summary and transactions.
-- 990 AI classification pipeline: OpenAI-powered transaction mapping to IRS 990 line items, rule-based classification fallback, progressive form builder with section-by-section AI confidence scores.
-- Rule-based anomaly detection engine: five detection rules (compensation outlier, expense ratio drift, vendor concentration, revenue anomaly, governance red flags) with output shaped to match AnomalyRegistry contract parameters.
-- Merkle root generation: 4-leaf Merkle tree (revenue, expenses, vendor payments, balance sheet) with deterministic JSON serialization and keccak256 hashing, schema hash for version identification.
-- Frontend onchain reads: viem-based public client reading all five contracts on Fuji C-Chain with 5-second timeout and graceful fallback to static data.
-- UUPS proxy pattern on all contracts for upgradeability.
-- Supabase integration: Postgres via Prisma (User, Organization, Account, Transaction models with QBO token storage), OTP authentication via @supabase/ssr.
-- Onboarding flow: 4-step wizard (name org → connect QBO → sync with SSE progress → complete).
-- "Tallyview Verified" badge: displays "Verified on-chain" when attestation is live, "Chain unavailable" as fallback.
-- Hardhat test suites for all five contracts using Chai assertions.
-- Demo scripts for each contract showing full lifecycle with realistic nonprofit scenarios.
+- **AuditLedger** — Stores Merkle roots of financial data onchain. Tracks org identity by address with human-readable name lookup. Includes TxAllowList hooks for future L1. All other contracts reference it. Deployed to Fuji C-Chain, UUPS proxy.
+- **ComplianceEngine** — Creates and enforces compliance rules (spending caps, overhead ratios, filing deadlines). Status moves automatically: Compliant → AtRisk → Violated. Violations are permanent. Deployed to Fuji C-Chain, UUPS proxy.
+- **AnomalyRegistry** — Records flagged findings onchain with severity and confidence scores. Status can only move forward (New → Reviewed → Resolved/Escalated). SYSTEM_ROLE can record and escalate but cannot resolve its own findings. Deployed to Fuji C-Chain, UUPS proxy.
+- **EntityGraph** — Maps relationships (people, vendors, addresses) across orgs using identity hashes. `getSharedEntities(orgA, orgB)` returns overlapping entities — this is what powers conflict-of-interest checks. Deployed to Fuji C-Chain, UUPS proxy.
+- **EvidenceVault** — Stores investigation evidence metadata with chain-of-custody. Per-case access control. Sealing is one-way. Tracks the full investigation lifecycle: Tip → Analysis → Discovery → Filing → Recovery → Closed. Deployed to Fuji C-Chain, UUPS proxy.
+- **Four dashboards** — Nonprofit (990 prep, anomalies, restricted funds, audit prep, reports), Foundation (grantee health, benchmarks, risk alerts), Regulator (jurisdiction risk map, entity analysis, investigations), Investigator (case management, fraud typologies, tip intake). Built with Next.js App Router, Tailwind, Radix UI.
+- **QuickBooks Online integration** — OAuth flow, token management, data sync (accounts, invoices, bills, purchases, journal entries), QBO dashboard showing accounts and transactions.
+- **990 classification** — OpenAI maps transactions to IRS 990 line items, with rule-based fallback. Progressive form builder shows confidence scores per section.
+- **Anomaly detection** — Five rules: compensation outlier, expense ratio drift, vendor concentration, revenue anomaly, governance red flags. Output matches AnomalyRegistry contract parameters.
+- **Merkle root generation** — 4-leaf tree (revenue, expenses, vendor payments, balance sheet) using deterministic JSON and keccak256 hashing. Schema hash included for versioning.
+- **Frontend reads from chain** — viem public client reads all five contracts on Fuji with 5-second timeout. Falls back to static data when the chain is unavailable.
+- **UUPS proxies** on all five contracts for upgradeability.
+- **Supabase** — Postgres via Prisma (User, Organization, Account, Transaction models, QBO token storage). OTP auth via @supabase/ssr.
+- **Onboarding** — 4-step wizard: name org, connect QBO, sync data (SSE progress), done.
+- **"Tallyview Verified" badge** — Shows "Verified on-chain" when an attestation exists, "Chain unavailable" otherwise.
+- **Hardhat tests** for all five contracts.
+- **Demo scripts** for each contract showing full lifecycle with realistic nonprofit scenarios.
 
 **Must Have (partially implemented):**
-- Accounting data pipeline (QBO → Merkle root → chain → dashboard): Pipeline generates Merkle roots from QuickBooks data and the frontend reads attestations from the chain. The missing link is automated onchain write from the web app — attestation submission currently requires running Hardhat scripts manually. The data format and contract interface are aligned.
-- Relay service: The relay wallet concept is implemented in contracts (SYSTEM_ROLE granted to RELAY_ADDRESS at deploy time) and all deploy/demo scripts use it. However, no relay service runs within the Next.js application — onchain writes only happen via Hardhat CLI. Integration of a backend write service is the key remaining infrastructure work.
+- **Data pipeline (QBO → Merkle root → chain → dashboard)** — The pipeline generates Merkle roots from QuickBooks data, and the frontend reads attestations from the chain. The gap: attestation submission still requires running Hardhat scripts manually. The data format and contract interface already match.
+- **Relay service** — Contracts grant SYSTEM_ROLE to a relay address at deploy time, and all deploy/demo scripts use it. But no relay runs inside the Next.js app yet — writes only happen via Hardhat CLI. Wiring up a backend write service is the main remaining work.
 
 **Should Have:**
-- Automated SaaS-to-chain relay: API routes or background service in the Next.js app that submits Merkle roots, anomaly findings, and compliance reports to the chain automatically when data changes, using the relay wallet.
-- Demo scripts with compelling console output for each contract showing realistic nonprofit scenarios (e.g., the UCHS embezzlement pattern). Currently implemented for anomaly lifecycle, compliance lifecycle, entity graph, evidence lifecycle, and full pipeline simulation.
+- **Automated relay from the web app** — API routes or a background service that submits Merkle roots, anomaly findings, and compliance reports to the chain when data changes, using the relay wallet.
+- **Demo scripts with clear console output** for each contract showing realistic nonprofit scenarios (e.g., the UCHS embezzlement pattern). Already done for anomaly, compliance, entity graph, evidence, and full pipeline.
 
 **Could Have:**
-- Multi-platform accounting integration (Xero, Sage, NetSuite, FreshBooks) via Codat/Merge/Apideck — pipeline data format is already shaped for Codat-normalized responses.
-- Purpose-built Avalanche L1 deployment with sovereign validator set, custom gas token, and native TxAllowList enforcement (contracts already include the integration, disabled on Fuji).
-- Account abstraction (ERC-4337) for fully gasless nonprofit interaction — currently the relay uses a standard EOA wallet.
-- Permissioned access tiers enforced at chain level using Avalanche's native allowlist precompiles (public / permissioned / restricted).
-- "Tallyview Verified" Soulbound Token (SBT) issuance for connected nonprofits.
-- Interchain Messaging (ICM) configuration for cross-jurisdictional communication between Tallyview L1 instances.
-- USDC integration via Avalanche ICTT for grant payment flow demonstration.
-- Whistleblower tip submission from the investigator workbench to EvidenceVault onchain — contract support exists (EvidenceClassification.Tip), UI has tip intake, but no end-to-end API-to-chain flow.
-- Supabase Edge Functions for serverless background processing.
+- Multi-platform accounting (Xero, Sage, NetSuite, FreshBooks) via Codat/Merge/Apideck. The pipeline data format already fits Codat-normalized responses.
+- Dedicated Avalanche L1 with its own validator set, gas token, and native TxAllowList enforcement. Contracts already include the hooks, just disabled on Fuji.
+- Account abstraction (ERC-4337) so nonprofits never touch gas. The relay currently uses a standard EOA.
+- Chain-level permissioned access tiers via Avalanche allowlist precompiles (public / permissioned / restricted).
+- "Tallyview Verified" Soulbound Token (SBT) for connected nonprofits.
+- Interchain Messaging (ICM) for cross-jurisdiction communication between L1 instances.
+- USDC integration via Avalanche ICTT for grant payment demo.
+- Whistleblower tip submission from the investigator workbench to EvidenceVault onchain. Contract and UI both support it, but there's no API-to-chain connection yet.
+- Supabase Edge Functions for background processing.
 
-**Won't Have (for this phase):**
-- Production ML/AI anomaly detection models (rule-based engine with five detection rules is sufficient for demo; ML layers on as data accumulates post-launch).
-- Mainnet deployment (Fuji C-Chain validates the architecture; mainnet L1 is ~$995 via managed service post-competition).
-- State AG or federal government pilot integrations.
-- FedRAMP/GovCloud compliance infrastructure.
+**Won't Have (this phase):**
+- Production ML models for anomaly detection. The five-rule engine is enough for demo; ML gets added as data grows.
+- Mainnet deployment. Fuji validates the architecture. Mainnet L1 costs ~$995/month via managed service after the competition.
+- State AG or federal government pilots.
+- FedRAMP/GovCloud compliance.
 - International expansion or per-jurisdiction L1 instances.
-- Real grant payment disbursement flows through smart contracts.
-- Board governance attestation system (board members signing onchain attestations of financial review).
+- Real grant disbursement through smart contracts.
+- Board governance attestation (board members signing onchain that they reviewed financials).

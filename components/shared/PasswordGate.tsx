@@ -23,7 +23,7 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
   const [submitting, setSubmitting] = useState(false);
   const pathname = usePathname();
   const { appUser } = useAuth();
-  const isPublicRoute = pathname === '/' || pathname === '/login' || pathname.startsWith('/case-files');
+  const isPublicRoute = pathname === '/' || pathname === '/login' || pathname === '/demo' || pathname === '/onboarding' || pathname.startsWith('/case-files');
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

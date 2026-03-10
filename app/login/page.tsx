@@ -18,7 +18,7 @@ const RESEND_COOLDOWN = 60;
 
 export default function LoginPage() {
   const router = useRouter();
-  const { sendOtp, verifyOtp } = useAuth();
+  const { sendOtp, verifyOtp, appUser, isLoading } = useAuth();
 
   const [step, setStep] = useState<'email' | 'code'>('email');
   const [email, setEmail] = useState('');
@@ -26,6 +26,13 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+  const [postVerifyRedirect, setPostVerifyRedirect] = useState<'/dashboard' | '/onboarding' | null>(null);
+
+  useEffect(() => {
+    if (!isLoading && appUser) {
+      router.replace(postVerifyRedirect ?? '/dashboard');
+    }
+  }, [isLoading, appUser, postVerifyRedirect, router]);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -63,7 +70,7 @@ export default function LoginPage() {
       return;
     }
 
-    router.push('/onboarding');
+    setPostVerifyRedirect(result.isNewUser ? '/onboarding' : '/dashboard');
   };
 
   const handleResend = async () => {

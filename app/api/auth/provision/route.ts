@@ -34,7 +34,7 @@ export async function POST() {
           data: { supabaseId: supabaseUser.id },
         });
       }
-      return NextResponse.json({ user: existing });
+      return NextResponse.json({ user: existing, isNew: false });
     }
 
     const user = await prisma.$transaction(async (tx) => {
@@ -71,7 +71,7 @@ export async function POST() {
       });
     });
 
-    return NextResponse.json({ user });
+    return NextResponse.json({ user, isNew: true });
   } catch (err) {
     console.error('Provision error:', err);
     return NextResponse.json({ error: 'Failed to provision user' }, { status: 500 });
