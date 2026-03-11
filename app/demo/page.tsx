@@ -92,15 +92,6 @@ export default function DemoPage() {
           ))}
         </div>
 
-        <div className="mt-8 text-center">
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-brand-gold transition-colors"
-          >
-            Have an account? Sign in
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
       </div>
 
       <footer className="py-4 text-center space-y-2">

@@ -56,7 +56,7 @@ export default function Home() {
               </p>
               <div className="mt-8 flex max-w-xl gap-3">
                 <Link
-                  href="/login"
+                  href="/dashboard"
                   className="inline-flex items-center gap-2 rounded-xl bg-brand-gold px-5 py-3 text-sm font-semibold text-brand-navy transition hover:bg-brand-gold-light"
                 >
                   Get Started
