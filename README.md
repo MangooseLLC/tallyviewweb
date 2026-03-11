@@ -14,10 +14,19 @@ The frontend serves four persona-specific dashboards, each tailored to a distinc
 
 | Persona | Key Views |
 |---|---|
-| **Nonprofit** | Dashboard, 990 preparation, anomaly review, restricted funds, audit prep, reports, settings |
+| **Nonprofit** | Dashboard, QuickBooks sync, 990 preparation, anomaly review, restricted funds, audit prep, reports, settings |
 | **Foundation** | Portfolio overview, grantee detail, benchmarking, alerts, reports, settings |
 | **Regulator** | Jurisdiction dashboard, entity analysis, investigations, reports |
 | **Investigator** | Case management, fraud typologies, investigator workbench |
+
+Core flow: **Connect → Organize → Verify → Prove**.
+
+- **Connect** — OAuth integration with QuickBooks Online to pull accounts and transactions.
+- **Organize** — AI-powered classification of transactions into IRS Form 990 categories using OpenAI (GPT-4o-mini), with rule-based and taxonomy fallbacks.
+- **Verify** — Anomaly detection, restricted fund tracking, compliance checks, and peer benchmarking.
+- **Prove** — On-chain attestations (Merkle roots) recorded to the Tallyview Accountability Chain on Avalanche.
+
+A built-in **demo mode** with persona switcher allows exploration of all four dashboards without authentication (personas: Sarah Chen, Marcus Thompson, Director Rivera, Jessica Park).
 
 ### Onchain Layer — Tallyview Avalanche L1
 
@@ -48,11 +57,20 @@ Investigation evidence with chain-of-custody. Anchors evidence onchain with clas
 ### Frontend
 
 - **Next.js 14** (App Router)
-- **TypeScript**
+- **TypeScript 5.3**
 - **Tailwind CSS** + **Radix UI** primitives
 - **Recharts** for data visualization
 - **react-force-graph-2d** for entity relationship graphs
 - **Zod** for validation
+
+### Backend & Data
+
+- **PostgreSQL** via **Prisma 6** ORM
+- **Supabase** for authentication (SSR) and managed Postgres
+- **OpenAI** (GPT-4o-mini) for IRS 990 transaction classification
+- **QuickBooks Online** OAuth integration for accounting data sync
+- **Resend** for transactional emails (invitations)
+- **Viem** for blockchain client interaction (Avalanche Fuji testnet)
 
 ### Smart Contracts
 
@@ -61,37 +79,89 @@ Investigation evidence with chain-of-custody. Anchors evidence onchain with clas
 - **OpenZeppelin Contracts Upgradeable v5.1** (UUPS proxy, AccessControl)
 - **Avalanche Subnet-EVM** compatible
 
+### Infrastructure
+
+- **Vercel** for hosting and serverless functions
+- **Supabase** for managed PostgreSQL and auth
+- **Vercel Postgres** for waitlist
+
 ## Project Structure
 
 ```
 .
 ├── app/
-│   ├── (nonprofit)/             # Nonprofit persona views
+│   ├── page.tsx                    # Landing page
+│   ├── layout.tsx                  # Root layout (AuthProvider)
+│   ├── demo/                       # Demo mode with persona switcher
+│   ├── login/                      # Login page
+│   ├── onboarding/                 # Org setup + QBO connection flow
+│   ├── case-files/                 # Public case study views
+│   │   └── [slug]/
+│   ├── (nonprofit)/                # Nonprofit persona (route group)
 │   │   ├── dashboard/
+│   │   ├── quickbooks/
 │   │   ├── 990/
 │   │   ├── anomalies/
 │   │   ├── restricted-funds/
 │   │   ├── audit-prep/
 │   │   ├── reports/
 │   │   └── settings/
-│   ├── (foundation)/            # Foundation persona views
+│   ├── foundation/                 # Foundation persona
+│   │   ├── dashboard/
 │   │   ├── portfolio/
 │   │   ├── grantee/[id]/
 │   │   ├── benchmarking/
-│   │   └── alerts/
-│   ├── (investigator)/          # Investigator persona views
-│   │   ├── cases/
-│   │   ├── fraud-typologies/
-│   │   └── workbench/
-│   ├── regulator/               # Regulator persona views
+│   │   ├── alerts/
+│   │   ├── reports/
+│   │   └── settings/
+│   ├── regulator/                  # Regulator persona
 │   │   ├── dashboard/
 │   │   ├── jurisdiction/
 │   │   ├── entity-analysis/
 │   │   ├── investigations/
 │   │   └── reports/
-│   ├── case-files/              # Public case file views
-│   ├── api/                     # API routes
-│   └── layout.tsx               # Root layout
+│   ├── investigator/               # Investigator persona
+│   │   ├── dashboard/
+│   │   ├── workbench/
+│   │   ├── cases/
+│   │   └── fraud-typologies/
+│   └── api/                        # API routes
+│       ├── auth/                   # Auth (provision, user, logout)
+│       ├── chain/                  # On-chain attestation
+│       ├── qbo/                    # QuickBooks OAuth + sync
+│       ├── 990/                    # 990 classification
+│       └── waitlist/               # Waitlist signup
+├── components/                     # Shared React components
+├── contexts/                       # React contexts (AuthContext)
+├── lib/
+│   ├── 990/                        # IRS 990 classification logic
+│   │   ├── ai-classify.ts          # OpenAI batch classification
+│   │   ├── taxonomy.ts             # 990 category taxonomy
+│   │   ├── rules.ts                # Rule-based classification
+│   │   └── classify.ts             # Classification orchestrator
+│   ├── chain/                      # Blockchain interaction (Viem)
+│   │   ├── client.ts               # Public + relay wallet clients
+│   │   ├── config.ts               # Contract addresses
+│   │   ├── reads.ts                # On-chain read helpers
+│   │   └── abis/                   # Contract ABIs
+│   ├── pipeline/                   # Data pipeline
+│   │   ├── from-qbo.ts             # QBO data extraction
+│   │   ├── hash.ts                 # Merkle root computation
+│   │   ├── ingest.ts               # Transaction ingestion
+│   │   ├── map990.ts               # 990 mapping
+│   │   └── detect.ts               # Anomaly detection
+│   ├── data/                       # Static/mock data for personas
+│   ├── supabase/                   # Supabase client + middleware helpers
+│   ├── qbo-auth.ts                 # QuickBooks OAuth flow
+│   ├── qbo-sync.ts                 # Streamed QBO sync
+│   ├── qbo-client.ts               # QBO API client
+│   ├── qbo-financials.ts           # QBO financial data helpers
+│   ├── get-user-org.ts             # Resolve user/org from session or demo
+│   ├── auth-session.ts             # Session utilities
+│   └── prisma.ts                   # Prisma client singleton
+├── prisma/
+│   ├── schema.prisma               # Database schema
+│   └── migrations/                 # Prisma migrations
 ├── tallyview-contracts/
 │   ├── contracts/
 │   │   ├── AuditLedger.sol
@@ -107,11 +177,12 @@ Investigation evidence with chain-of-custody. Anchors evidence onchain with clas
 │   │       ├── IAnomalyRegistry.sol
 │   │       ├── IEntityGraph.sol
 │   │       └── IEvidenceVault.sol
-│   ├── test/                    # Hardhat test suites for all contracts
-│   ├── scripts/                 # Deploy + demo lifecycle scripts
+│   ├── test/                       # Hardhat test suites
+│   ├── scripts/                    # Deploy + demo lifecycle scripts
 │   ├── hardhat.config.ts
 │   └── package.json
-├── Brand Assets/                # Logo files (SVG, PNG, PDF)
+├── Brand Assets/                   # Logo files (SVG, PNG, PDF)
+├── middleware.ts                    # Next.js middleware (auth, routing)
 └── package.json
 ```
 
@@ -120,11 +191,40 @@ Investigation evidence with chain-of-custody. Anchors evidence onchain with clas
 ### Prerequisites
 
 - Node.js 18+
+- A PostgreSQL database (Supabase recommended)
+
+### Environment Variables
+
+Copy `.env.example` and fill in the required values:
+
+```bash
+cp .env.example .env.local
+```
+
+| Variable | Purpose |
+|---|---|
+| `DATABASE_URL` | Prisma connection string (pooled) |
+| `DIRECT_URL` | Prisma direct connection (migrations) |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key |
+| `QBO_CLIENT_ID` | QuickBooks Online OAuth client ID |
+| `QBO_CLIENT_SECRET` | QuickBooks Online OAuth client secret |
+| `QBO_REDIRECT_URI` | QuickBooks OAuth callback URL |
+| `QBO_ENVIRONMENT` | `sandbox` or `production` |
+| `QBO_BASE_URL` | QuickBooks API base URL |
+| `OPENAI_API_KEY` | OpenAI API key (for 990 classification) |
+| `RELAY_PRIVATE_KEY` | Private key for on-chain attestation relay |
+| `RESEND_API_KEY` | Resend API key (invitation emails) |
+| `RESEND_FROM_EMAIL` | Sender email address for invitations |
+| `SITE_PASSWORD` | Optional site-wide password gate |
 
 ### Frontend
 
 ```bash
 npm install
+npx prisma generate
+npx prisma db push        # or: npx prisma migrate deploy
 npm run dev
 ```
 
@@ -147,6 +247,43 @@ npx hardhat run scripts/deploy-audit-ledger.ts --network localhost
 ```
 
 See `tallyview-contracts/.env.example` for testnet configuration.
+
+## Integrations
+
+### QuickBooks Online
+
+OAuth 2.0 flow connects organizations to their QuickBooks accounting data. Once authorized, Tallyview syncs accounts and transactions via the QBO API, then runs them through the classification and anomaly detection pipeline. The sync streams progress updates to the UI in real time.
+
+### OpenAI
+
+Transactions that cannot be classified by rule-based or taxonomy matching are batched and sent to GPT-4o-mini for IRS 990 category classification. The AI layer returns a category, confidence score, and reasoning for each transaction.
+
+### Blockchain (Avalanche Fuji)
+
+A relay wallet submits attestations on behalf of organizations. When an org attests, the system computes a Merkle root over its financial data and writes it to the `AuditLedger` contract. Org addresses are auto-provisioned on first attestation.
+
+### Supabase
+
+Handles authentication (email-based, SSR cookie sessions) and provides the managed PostgreSQL database. The middleware layer validates sessions on protected routes.
+
+### Resend
+
+Sends transactional emails for team invitations when an organization admin invites new members.
+
+## Database Schema
+
+Managed by Prisma. Key models:
+
+| Model | Purpose |
+|---|---|
+| `User` | Authenticated users |
+| `Organization` | Nonprofit organizations |
+| `OrgMembership` | User-to-org relationship with roles |
+| `Invitation` | Pending team invitations |
+| `Account` | Chart of accounts (synced from QBO) |
+| `Transaction` | Financial transactions (synced from QBO) |
+| `SyncJob` | QBO sync job tracking |
+| `AuditSubmission` | On-chain attestation records |
 
 ## Role-Based Access Model
 
