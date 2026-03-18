@@ -1,0 +1,49 @@
+---
+description: Core coding standards — elegance, simplicity, correctness, and honesty
+alwaysApply: true
+---
+
+# Coding Standards
+
+## Principles
+
+1. **Simplicity first.** Write the simplest solution that works. Avoid premature abstraction, clever tricks, and unnecessary indirection. If a junior developer can't follow it, simplify it.
+2. **Elegance through clarity.** Clean naming, consistent structure, small focused functions. Code should read like well-written prose — no sprawling functions, no mystery variables.
+3. **Fix all bugs before moving on.** Never leave known broken code behind. If you introduce a bug or discover one while working, fix it immediately before continuing. Verify your fix works.
+4. **Never hallucinate.** If you're unsure about an API, library method, or behavior — look it up first. Do not guess at function signatures, config options, or return types. Say "I'm not sure" rather than fabricate an answer.
+
+## Code Style
+
+- Prefer `const` over `let`. Never use `var`.
+- Use early returns to reduce nesting.
+- Keep functions under ~40 lines. Extract when they grow.
+- Name booleans as questions: `isLoading`, `hasAccess`, `canEdit`.
+- Destructure props and objects at the point of use.
+- Delete dead code. Don't comment it out.
+
+## TypeScript
+
+- Use explicit types for function parameters and return values.
+- Prefer `interface` for object shapes, `type` for unions/intersections.
+- Use Zod schemas as the single source of truth for validation; derive types with `z.infer`.
+- Never use `any`. Use `unknown` and narrow with type guards when the type is truly uncertain.
+
+## React & Next.js
+
+- Use Server Components by default. Only add `"use client"` when you need interactivity, browser APIs, or hooks.
+- Colocate related code: component, hooks, types, and utils in the same directory.
+- Prefer composition over prop drilling. Use context sparingly and only for truly global state.
+- Handle loading and error states in every data-fetching component.
+
+## Error Handling
+
+- Always handle errors explicitly. Never swallow exceptions with empty catch blocks.
+- Provide useful error messages that help with debugging.
+- Validate external input (API responses, user input, env vars) at the boundary.
+
+## Before Finishing Any Task
+
+- Confirm the code compiles without type errors.
+- Check for and fix any linter warnings you introduced.
+- Verify the change doesn't break existing functionality.
+- If you're uncertain something works, say so — don't assume.
