@@ -36,6 +36,18 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const PERSONA_KEY = 'tallyview_persona';
 
+/** Maps pre-rename persona ids so existing localStorage entries keep working. */
+const LEGACY_PERSONA_ID_MAP: Record<string, string> = {
+  'sarah-chen': 'katy-alyst',
+  'marcus-thompson': 'grant-wishman',
+  'jessica-park': 'bill-label',
+  'bill-lable': 'bill-label',
+};
+
+function normalizePersonaId(personaId: string): string {
+  return LEGACY_PERSONA_ID_MAP[personaId] ?? personaId;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [currentPersona, setCurrentPersona] = useState<Persona | null>(null);
   const [appUser, setAppUser] = useState<AppUser | null>(null);
@@ -74,8 +86,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const stored = localStorage.getItem(PERSONA_KEY);
         if (stored) {
-          const persona = personas.find(p => p.id === stored);
-          if (persona) setCurrentPersona(persona);
+          const id = normalizePersonaId(stored);
+          const persona = personas.find(p => p.id === id);
+          if (persona) {
+            setCurrentPersona(persona);
+            if (id !== stored) {
+              try {
+                localStorage.setItem(PERSONA_KEY, id);
+              } catch {
+                /* ignore quota / private mode */
+              }
+            }
+          }
         }
       } catch {}
 
@@ -114,11 +136,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // --- Demo persona methods ---
 
   const login = useCallback((personaId: string) => {
-    const persona = personas.find(p => p.id === personaId);
+    const id = normalizePersonaId(personaId);
+    const persona = personas.find(p => p.id === id);
     if (persona) {
       setAppUser(null);
       setCurrentPersona(persona);
-      try { localStorage.setItem(PERSONA_KEY, personaId); } catch {}
+      try {
+        localStorage.setItem(PERSONA_KEY, id);
+      } catch {
+        /* ignore */
+      }
     }
   }, []);
 
@@ -128,10 +155,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const switchPersona = useCallback((personaId: string) => {
-    const persona = personas.find(p => p.id === personaId);
+    const id = normalizePersonaId(personaId);
+    const persona = personas.find(p => p.id === id);
     if (persona) {
       setCurrentPersona(persona);
-      try { localStorage.setItem(PERSONA_KEY, personaId); } catch {}
+      try {
+        localStorage.setItem(PERSONA_KEY, id);
+      } catch {
+        /* ignore */
+      }
     }
   }, []);
 

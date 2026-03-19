@@ -81,7 +81,7 @@ function generateMonthlyFinancials(annualBudget: number, healthFactor: number, m
 }
 
 export const nonprofits: NonprofitOrg[] = [
-  // PRIMARY ORG - Sarah Chen's org
+  // PRIMARY ORG - Katy Alyst's org
   {
     id: 'org-bright-futures',
     name: 'Bright Futures Youth Services',
@@ -92,7 +92,7 @@ export const nonprofits: NonprofitOrg[] = [
     state: 'Oregon',
     city: 'Portland',
     foundedYear: 2008,
-    executiveDirector: 'Sarah Chen',
+    executiveDirector: 'Katy Alyst',
     riskScore: 82,
     complianceScore: 92,
     connectedSystem: 'QuickBooks Online',

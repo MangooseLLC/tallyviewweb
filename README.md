@@ -26,7 +26,7 @@ Core flow: **Connect → Organize → Verify → Prove**.
 - **Verify** — Anomaly detection, restricted fund tracking, compliance checks, and peer benchmarking.
 - **Prove** — On-chain attestations (Merkle roots) recorded to the Tallyview Accountability Chain on Avalanche.
 
-A built-in **demo mode** with persona switcher allows exploration of all four dashboards without authentication (personas: Sarah Chen, Marcus Thompson, Director Rivera, Jessica Park).
+A built-in **demo mode** with persona switcher allows exploration of all four dashboards without authentication (personas: Katy Alyst, Grant Wishman, Director Rivera, Bill Label).
 
 ### Onchain Layer — Tallyview Avalanche L1
 

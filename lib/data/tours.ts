@@ -7,7 +7,7 @@ export interface TourConfig {
 
 export const tours: TourConfig[] = [
   {
-    personaId: 'sarah-chen',
+    personaId: 'katy-alyst',
     steps: [
       {
         element: '[data-tour="stat-990"]',
@@ -52,7 +52,7 @@ export const tours: TourConfig[] = [
     ],
   },
   {
-    personaId: 'marcus-thompson',
+    personaId: 'grant-wishman',
     steps: [
       {
         popover: {
@@ -82,7 +82,7 @@ export const tours: TourConfig[] = [
     ],
   },
   {
-    personaId: 'jessica-park',
+    personaId: 'bill-label',
     steps: [
       {
         popover: {

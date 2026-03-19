@@ -98,7 +98,7 @@ const EIN = '93-1234567';
 const MISSION = 'Empowering underserved youth through education, mentorship, and community engagement programs across the Pacific Northwest.';
 
 const COMPENSATION: CompensationEntry[] = [
-  { name: 'Sarah Chen', title: 'CEO / Executive Director', type: 'executive', annualCompensation: 185_000_00, benefits: 37_000_00 },
+  { name: 'Katy Alyst', title: 'CEO / Executive Director', type: 'executive', annualCompensation: 185_000_00, benefits: 37_000_00 },
   { name: 'Marcus Williams', title: 'CFO', type: 'executive', annualCompensation: 155_000_00, benefits: 31_000_00 },
   { name: 'Diana Torres', title: 'Program Director', type: 'key-employee', annualCompensation: 125_000_00, benefits: 25_000_00 },
   { name: 'James Okafor', title: 'Development Director', type: 'key-employee', annualCompensation: 115_000_00, benefits: 23_000_00 },
