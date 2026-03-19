@@ -27,8 +27,9 @@ export default function Home() {
                 Nonprofit financial compliance
               </p>
               <h1 className="mt-5 text-4xl font-semibold leading-tight md:text-5xl">
-                Your 990 builds itself.
+                <span className="block">Your 990 builds itself.</span>
                 <span className="block text-brand-gold">Your books stay audit-ready.</span>
+                <span className="block">Your nonprofit is trusted.</span>
               </h1>
               <p className="mt-5 max-w-xl text-base text-slate-200 md:text-lg">
                 Tallyview connects to your accounting system, classifies transactions
