@@ -2,7 +2,6 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
-const AUTH_ROUTES = ['/login', '/signup'];
 const PROTECTED_PREFIXES = ['/onboarding', '/quickbooks', '/api/chain/', '/api/qbo/sync', '/api/qbo/classify'];
 
 function createMiddlewareSupabase(request: NextRequest, response: NextResponse) {
@@ -42,13 +41,6 @@ export async function middleware(request: NextRequest) {
   }
 
   const { pathname } = request.nextUrl;
-
-  // Redirect authenticated users away from login/signup
-  if (AUTH_ROUTES.some(r => pathname === r)) {
-    if (user) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
-  }
 
   // Protect routes that require real auth (demo users use client-side guard)
   if (PROTECTED_PREFIXES.some(p => pathname.startsWith(p))) {

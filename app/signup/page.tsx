@@ -5,15 +5,28 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 export default function SignupPage() {
   const router = useRouter();
+  const { appUser, isAuthenticated, isDemoMode, isLoading, logout, signOut } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  async function handleExitSession() {
+    if (isDemoMode) {
+      logout();
+      router.refresh();
+      return;
+    }
+
+    await signOut();
+    router.refresh();
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -60,6 +73,61 @@ export default function SignupPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-navy via-brand-navy to-brand-navy-light px-4">
+        <div className="h-8 w-8 rounded-full border-2 border-brand-gold border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-brand-navy via-brand-navy to-brand-navy-light px-4">
+        <div className="w-full max-w-sm">
+          <Link href="/" className="mb-8 flex justify-center">
+            <Image
+              src="/tallyview-logo.svg"
+              alt="Tallyview"
+              width={180}
+              height={50}
+              className="h-8 w-auto brightness-0 invert"
+              priority
+            />
+          </Link>
+
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
+            <h1 className="text-xl font-semibold text-white">You&apos;re already signed in</h1>
+            <p className="mt-1 text-sm text-slate-300">
+              {appUser?.email
+                ? `Signed in as ${appUser.email}.`
+                : 'Your current session is already active.'}
+            </p>
+
+            <div className="mt-6 space-y-3">
+              <button
+                type="button"
+                onClick={() => router.push('/dashboard')}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-gold px-4 py-2.5 text-sm font-semibold text-brand-navy transition hover:bg-brand-gold-light"
+              >
+                Go to Dashboard
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+
+              <button
+                type="button"
+                onClick={handleExitSession}
+                className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10"
+              >
+                Sign Out and Create Another Account
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
