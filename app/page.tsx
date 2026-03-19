@@ -11,8 +11,6 @@ import {
 } from 'lucide-react';
 import ArchitectureDiagram from '@/components/landing/ArchitectureDiagram';
 import VerifiedBadge from '@/components/landing/VerifiedBadge';
-import InstitutionalProof from '@/components/landing/InstitutionalProof';
-import ValidatorNetwork from '@/components/landing/ValidatorNetwork';
 import { PublicNav } from '@/components/layouts/PublicNav';
 
 export default function Home() {
@@ -196,9 +194,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      <InstitutionalProof />
-      <ValidatorNetwork />
 
       <footer className="border-t border-slate-200 bg-slate-50">
         <div className="mx-auto w-full max-w-6xl px-6 pt-16 pb-8">
