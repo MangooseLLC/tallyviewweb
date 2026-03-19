@@ -161,16 +161,24 @@ export interface InvestigationCase {
   keyFindings: string[];
 }
 
+export type DetectionDifficulty = 'Low' | 'Low-Medium' | 'Medium' | 'Hard';
+export type FraudCategoryGroup = 'Asset Misappropriation' | 'Corruption' | 'Financial Reporting';
+
 export interface FraudTypology {
   id: string;
   name: string;
   description: string;
+  categoryGroup: FraudCategoryGroup;
+  category: string;
   redFlags: string[];
+  financialSignatures: string[];
   controlFailures: string[];
   detectionMethods: string[];
+  dataRequirements: string[];
   exampleCases: string[];
   frequencyInData: number;
-  category: string;
+  detectionDifficulty: DetectionDifficulty;
+  related990Lines: string[];
 }
 
 export interface Section990 {

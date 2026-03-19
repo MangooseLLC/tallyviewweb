@@ -56,6 +56,11 @@ export function InvestigatorDashboardContent({ chainData }: InvestigatorDashboar
     .sort((a, b) => b.value - a.value);
 
   const totalPatterns = fraudTypologies.reduce((sum, ft) => sum + ft.frequencyInData, 0);
+  const groupCounts = {
+    asset: fraudTypologies.filter(ft => ft.categoryGroup === 'Asset Misappropriation').length,
+    corruption: fraudTypologies.filter(ft => ft.categoryGroup === 'Corruption').length,
+    reporting: fraudTypologies.filter(ft => ft.categoryGroup === 'Financial Reporting').length,
+  };
 
   const recentCases = [...investigations]
     .sort((a, b) => new Date(b.lastActivity).getTime() - new Date(a.lastActivity).getTime())
@@ -89,7 +94,7 @@ export function InvestigatorDashboardContent({ chainData }: InvestigatorDashboar
         <StatCard title="Active Cases" value={investigations.length} subtitle={caseSummary?.live ? `Lead case: ${caseSummary.evidenceCount} evidence items` : 'Across all stages'} icon={<Briefcase className="h-5 w-5" />} trend="up" trendValue="2 new this month" />
         <StatCard title="Cases in Discovery" value={investigations.filter((c) => c.stage === 'Discovery').length} subtitle="Active document review" icon={<Search className="h-5 w-5" />} />
         <StatCard title="Potential Recovery Value" value={formatCurrency(totalRecovery, true)} subtitle={formatCurrency(totalRecovery)} icon={<DollarSign className="h-5 w-5" />} variant="success" trend="up" trendValue="$5.6M added this month" />
-        <StatCard title="Fraud Patterns Matched" value={totalPatterns} subtitle={`Across ${fraudTypologies.length} typologies`} icon={<Fingerprint className="h-5 w-5" />} variant="warning" />
+        <StatCard title="Fraud Patterns Matched" value={totalPatterns} subtitle={`${fraudTypologies.length} typologies: ${groupCounts.asset} asset, ${groupCounts.corruption} corruption, ${groupCounts.reporting} reporting`} icon={<Fingerprint className="h-5 w-5" />} variant="warning" />
       </div>
 
       {/* Cross-Org Intelligence Card */}
