@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { keccak256, toHex, getAddress, type Address } from 'viem';
+import { keccak256, toHex, type Address } from 'viem';
 import { getUserOrg } from '@/lib/get-user-org';
 import { prisma } from '@/lib/prisma';
 import { publicClient, getRelayWalletClient } from '@/lib/chain/client';
@@ -7,20 +7,7 @@ import { CONTRACTS, FUJI_EXPLORER_URL } from '@/lib/chain/config';
 import { auditLedgerAbi } from '@/lib/chain/abis/AuditLedger';
 import { generateMerkleRoot, SCHEMA_HASH } from '@/lib/pipeline/hash';
 import { buildFinancialPackage } from '@/lib/pipeline/from-qbo';
-
-function slugify(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9-]/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 32);
-}
-
-function deriveOrgAddress(orgId: string): Address {
-  const hash = keccak256(toHex(orgId));
-  return getAddress('0x' + hash.slice(2, 42));
-}
+import { slugify, deriveOrgAddress } from '@/lib/chain/org-utils';
 
 export async function POST() {
   const walletClient = getRelayWalletClient();
@@ -40,7 +27,14 @@ export async function POST() {
   }
 
   try {
-    let chainAddress = org.chainAddress as Address | null;
+    let chainAddress: Address | null = null;
+    if (org.chainAddress) {
+      const { isAddress, getAddress } = await import('viem');
+      if (!isAddress(org.chainAddress)) {
+        return NextResponse.json({ error: 'Corrupted on-chain address in database' }, { status: 500 });
+      }
+      chainAddress = getAddress(org.chainAddress);
+    }
 
     // --- Auto-provision on-chain identity if needed ---
     if (!chainAddress) {

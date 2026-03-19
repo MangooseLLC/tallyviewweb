@@ -1,5 +1,5 @@
 import { type Address } from 'viem';
-import { getLatestAudit, getOrgComplianceSummary, getOrgAnomalySummary } from '@/lib/chain/reads';
+import { getLatestAudit, getOrgComplianceSummary, getOrgAnomalySummary, getOrgGraphSummary } from '@/lib/chain/reads';
 import { getOrgAddress } from '@/lib/chain/config';
 import { PIPELINE_MONTHS, PIPELINE_MONTH_LABELS } from '@/lib/pipeline/ingest';
 import { generate990Progress } from '@/lib/pipeline/map990';
@@ -23,11 +23,13 @@ export default async function NonprofitDashboard() {
 
   const chainUnavailable = { activeRules: 0, totalViolations: 0, overdueDeadlines: 0, live: false };
   const anomalyUnavailable = { total: 0, open: 0, critical: 0, live: false };
+  const graphUnavailable = { totalEdges: 0, activeEdges: 0, uniqueEntities: 0, live: false };
 
-  const [attestation, compliance, anomalies] = await Promise.all([
-    orgAddress ? getLatestAudit(orgAddress) : Promise.resolve(null),
-    orgAddress ? getOrgComplianceSummary(orgAddress) : Promise.resolve(chainUnavailable),
-    orgAddress ? getOrgAnomalySummary(orgAddress) : Promise.resolve(anomalyUnavailable),
+  const [attestation, compliance, anomalies, entityGraph] = await Promise.all([
+    orgAddress ? getLatestAudit(orgAddress).catch(() => null) : Promise.resolve(null),
+    orgAddress ? getOrgComplianceSummary(orgAddress).catch(() => chainUnavailable) : Promise.resolve(chainUnavailable),
+    orgAddress ? getOrgAnomalySummary(orgAddress).catch(() => anomalyUnavailable) : Promise.resolve(anomalyUnavailable),
+    orgAddress ? getOrgGraphSummary(orgAddress).catch(() => graphUnavailable) : Promise.resolve(graphUnavailable),
   ]);
 
   const progress = generate990Progress(PIPELINE_MONTHS);
@@ -42,6 +44,7 @@ export default async function NonprofitDashboard() {
       : null,
     complianceSummary: compliance,
     anomalySummary: anomalies,
+    entityGraphSummary: entityGraph,
     completion990: progress.overallCompletion,
     monthsProcessed: monthLabels.length,
     monthRange,

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { QBOConnect } from '@/components/qbo/qbo-connect';
 import { TransactionsTable } from '@/components/qbo/transactions-table';
 import { AccountsSummary } from '@/components/qbo/accounts-summary';
+import { PipelineProgress } from '@/components/shared/PipelineProgress';
 
 export default function QuickBooksPage() {
   const [refreshKey, setRefreshKey] = useState(0);
@@ -20,6 +21,8 @@ export default function QuickBooksPage() {
       </div>
 
       <QBOConnect onSyncComplete={handleSyncComplete} />
+
+      <PipelineProgress />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">

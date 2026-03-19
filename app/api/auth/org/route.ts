@@ -5,13 +5,11 @@ import { getSessionEmail } from '@/lib/auth-session';
 export async function PATCH(request: NextRequest) {
   try {
     const email = await getSessionEmail();
-    if (!email) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
+    if (!email) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 
     const { name } = await request.json();
-    if (!name || typeof name !== 'string' || name.trim().length === 0) {
-      return NextResponse.json({ error: 'Organization name is required' }, { status: 400 });
+    if (!name || typeof name !== 'string' || name.trim().length === 0 || name.trim().length > 200) {
+      return NextResponse.json({ error: 'Name must be 1–200 characters' }, { status: 400 });
     }
 
     const user = await prisma.user.findUnique({

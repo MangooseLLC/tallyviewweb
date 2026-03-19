@@ -9,7 +9,7 @@ import { OnchainPipelineStatus } from '@/components/shared/OnchainPipelineStatus
 import { RevenueChart } from '@/components/charts/RevenueChart';
 import { ExpenseBreakdownChart } from '@/components/charts/ExpenseBreakdownChart';
 import { formatCurrency } from '@/lib/utils/formatters';
-import { Clock, ShieldCheck, FileText, AlertTriangle, Link2 } from 'lucide-react';
+import { Clock, ShieldCheck, FileText, AlertTriangle, Link2, Network } from 'lucide-react';
 import type { DashboardOrg } from '@/lib/qbo-financials';
 import Link from 'next/link';
 
@@ -17,6 +17,7 @@ interface ChainData {
   attestation: AttestationData | null;
   complianceSummary: { activeRules: number; totalViolations: number; overdueDeadlines: number; live: boolean };
   anomalySummary: { total: number; open: number; critical: number; live: boolean };
+  entityGraphSummary?: { totalEdges: number; activeEdges: number; uniqueEntities: number; live: boolean };
   completion990: number;
   monthsProcessed: number;
   monthRange: string;
@@ -27,25 +28,44 @@ interface NonprofitDashboardContentProps {
   orgData?: DashboardOrg | null;
 }
 
+const EMPTY_DEMO_ORG: DashboardOrg = {
+  name: 'Demo Organization',
+  revenueYTD: 0,
+  expensesYTD: 0,
+  netAssetsTotal: 0,
+  cashPosition: 0,
+  cashReserveMonths: 0,
+  programExpenseRatio: 0,
+  managementExpenseRatio: 0,
+  fundraisingExpenseRatio: 0,
+  financials: [],
+  restrictedFunds: [],
+};
+
+function buildDemoOrg(): DashboardOrg {
+  const org = getNonprofitById('org-bright-futures');
+  if (!org) return EMPTY_DEMO_ORG;
+  return {
+    name: org.name,
+    revenueYTD: org.revenueYTD,
+    expensesYTD: org.expensesYTD,
+    netAssetsTotal: org.netAssetsTotal,
+    cashPosition: org.financials[org.financials.length - 1]?.cashPosition ?? 0,
+    cashReserveMonths: org.cashReserveMonths,
+    programExpenseRatio: org.programExpenseRatio,
+    managementExpenseRatio: org.managementExpenseRatio,
+    fundraisingExpenseRatio: org.fundraisingExpenseRatio,
+    financials: org.financials,
+    restrictedFunds: org.restrictedFunds,
+  };
+}
+
 export function NonprofitDashboardContent({ chainData, orgData }: NonprofitDashboardContentProps) {
   const isRealUser = !!orgData;
 
-  const demoOrg = isRealUser ? null : getNonprofitById('org-bright-futures')!;
   const anomalies = isRealUser ? [] : getAnomaliesByOrg('org-bright-futures').filter(a => a.status !== 'Resolved').slice(0, 4);
 
-  const resolved: DashboardOrg = orgData ?? {
-    name: demoOrg!.name,
-    revenueYTD: demoOrg!.revenueYTD,
-    expensesYTD: demoOrg!.expensesYTD,
-    netAssetsTotal: demoOrg!.netAssetsTotal,
-    cashPosition: demoOrg!.financials[demoOrg!.financials.length - 1]?.cashPosition ?? 0,
-    cashReserveMonths: demoOrg!.cashReserveMonths,
-    programExpenseRatio: demoOrg!.programExpenseRatio,
-    managementExpenseRatio: demoOrg!.managementExpenseRatio,
-    fundraisingExpenseRatio: demoOrg!.fundraisingExpenseRatio,
-    financials: demoOrg!.financials,
-    restrictedFunds: demoOrg!.restrictedFunds,
-  };
+  const resolved: DashboardOrg = orgData ?? buildDemoOrg();
 
   const {
     name: orgName, revenueYTD, expensesYTD, netAssetsTotal,
@@ -59,9 +79,13 @@ export function NonprofitDashboardContent({ chainData, orgData }: NonprofitDashb
   const mgmtTotal = ytdFinancials.reduce((s, f) => s + f.expenses.management, 0);
   const fundTotal = ytdFinancials.reduce((s, f) => s + f.expenses.fundraising, 0);
 
-  const { attestation, complianceSummary, anomalySummary, completion990, monthsProcessed, monthRange } = chainData;
+  const { attestation, complianceSummary, anomalySummary, entityGraphSummary, completion990, monthsProcessed, monthRange } = chainData;
 
-  const filingDeadline = new Date(2026, 5, 28); // Jun 28, 2026
+  // TODO: Make fiscal year end configurable per org (currently assumes Dec 31 FYE).
+  // 990 extended deadline = Nov 15 of the year following the FYE.
+  const now = new Date();
+  const filingYear = now.getMonth() >= 10 ? now.getFullYear() + 1 : now.getFullYear();
+  const filingDeadline = new Date(filingYear, 10, 15);
   const daysUntilFiling = Math.max(
     0,
     Math.ceil((filingDeadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
@@ -98,7 +122,7 @@ export function NonprofitDashboardContent({ chainData, orgData }: NonprofitDashb
       </div>
 
       {/* Top Stats */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="990 Completion"
           value={`${completion990}%`}
@@ -131,7 +155,7 @@ export function NonprofitDashboardContent({ chainData, orgData }: NonprofitDashb
       </div>
 
       {/* Main Grid */}
-      <div className="grid grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
         {/* Left Column - 3 cols */}
         <div className="col-span-3 space-y-6">
           {/* Financial Health Summary */}
@@ -234,6 +258,30 @@ export function NonprofitDashboardContent({ chainData, orgData }: NonprofitDashb
               ))}
             </div>
           </div>
+
+          {/* Entity Graph Summary */}
+          {entityGraphSummary && entityGraphSummary.live && (
+            <div className="rounded-lg border bg-white p-5 shadow-sm">
+              <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <Network className="h-4 w-4 text-blue-600" />
+                Entity Graph
+              </h3>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="text-center">
+                  <p className="text-lg font-bold text-gray-900">{entityGraphSummary.uniqueEntities}</p>
+                  <p className="text-[10px] text-gray-500">Entities</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-lg font-bold text-gray-900">{entityGraphSummary.activeEdges}</p>
+                  <p className="text-[10px] text-gray-500">Active Edges</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-lg font-bold text-gray-900">{entityGraphSummary.totalEdges}</p>
+                  <p className="text-[10px] text-gray-500">Total Edges</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Onchain Pipeline Status */}
           <OnchainPipelineStatus

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import Image from 'next/image';
@@ -12,6 +12,7 @@ import {
   ArrowRight,
   Loader2,
   Database,
+  Shield,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -38,7 +39,7 @@ interface SyncResult {
   details?: string;
 }
 
-type Step = 'org-name' | 'connect-qbo' | 'sync' | 'done';
+type Step = 'org-name' | 'connect-qbo' | 'sync' | 'verify' | 'done';
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -52,12 +53,87 @@ export default function OnboardingPage() {
   const [qboStatus, setQboStatus] = useState<ConnectionStatus | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
+  const [verifying, setVerifying] = useState(false);
+  const [verifyStatus, setVerifyStatus] = useState<string>('');
+  const verifyAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (!authLoading && !appUser) {
       router.push('/login');
     }
   }, [authLoading, appUser, router]);
+
+  useEffect(() => {
+    return () => verifyAbortRef.current?.abort();
+  }, []);
+
+  const handleVerify = useCallback(async () => {
+    verifyAbortRef.current?.abort();
+    const controller = new AbortController();
+    verifyAbortRef.current = controller;
+
+    setVerifying(true);
+    setError('');
+    setVerifyStatus('Classifying transactions...');
+    try {
+      const classifyRes = await fetch('/api/qbo/classify', {
+        method: 'POST',
+        signal: controller.signal,
+      });
+      if (!classifyRes.ok) {
+        const d = await classifyRes.json().catch(() => ({}));
+        setError(d.error || 'Classification failed');
+        setVerifying(false);
+        return;
+      }
+
+      setVerifyStatus('Running on-chain pipeline...');
+      const pipelineRes = await fetch('/api/chain/pipeline', {
+        method: 'POST',
+        signal: controller.signal,
+      });
+      if (!pipelineRes.body) throw new Error('No pipeline stream');
+
+      const reader = pipelineRes.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = '';
+      while (true) {
+        const { done: rd, value } = await reader.read();
+        if (rd) break;
+        buf += decoder.decode(value, { stream: true });
+        const parts = buf.split('\n\n');
+        buf = parts.pop() || '';
+        for (const p of parts) {
+          const m = p.match(/^data: (.+)$/m);
+          if (!m) continue;
+          try {
+            const ev = JSON.parse(m[1]);
+            if (ev.step === 'complete') {
+              setVerifyStatus(`Pipeline complete: ${ev.summary?.anomalies ?? 0} anomalies, ${ev.summary?.vendors ?? 0} vendors mapped`);
+            } else if (ev.step === 'error') {
+              setError(ev.message);
+            } else if (ev.status === 'started') {
+              const labels: Record<string, string> = {
+                building: 'Building financial package...',
+                registering: 'Registering on-chain identity...',
+                attesting: 'Submitting audit attestation...',
+                detecting: 'Running anomaly detection...',
+                mapping_entities: 'Mapping vendor entities...',
+                compliance: 'Reporting compliance metrics...',
+              };
+              setVerifyStatus(labels[ev.step] || 'Processing...');
+            }
+          } catch { /* skip malformed SSE */ }
+        }
+      }
+      setStep('done');
+    } catch (e) {
+      if (e instanceof DOMException && e.name === 'AbortError') return;
+      setError(e instanceof Error ? e.message : 'Verification failed');
+    } finally {
+      setVerifying(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (appUser?.memberships?.[0]?.org?.name) {
@@ -179,7 +255,7 @@ export default function OnboardingPage() {
         if (finalResult) {
           setSyncResult(finalResult);
           await fetchQboStatus();
-          setStep('done');
+          setStep('verify');
         }
       } else {
         // Fallback: plain JSON response
@@ -189,7 +265,7 @@ export default function OnboardingPage() {
         } else {
           setSyncResult(data);
           await fetchQboStatus();
-          setStep('done');
+          setStep('verify');
         }
       }
     } catch {
@@ -211,7 +287,8 @@ export default function OnboardingPage() {
     { key: 'org-name', label: 'Organization', num: 1 },
     { key: 'connect-qbo', label: 'Connect QBO', num: 2 },
     { key: 'sync', label: 'Sync Data', num: 3 },
-    { key: 'done', label: 'Ready', num: 4 },
+    { key: 'verify', label: 'Verify', num: 4 },
+    { key: 'done', label: 'Ready', num: 5 },
   ];
   const currentStepIdx = steps.findIndex(s => s.key === step);
 
@@ -365,7 +442,47 @@ export default function OnboardingPage() {
             </>
           )}
 
-          {/* Step 4: Done */}
+          {/* Step 4: Verify On-Chain */}
+          {step === 'verify' && (
+            <>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="h-10 w-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                  <Shield className="h-5 w-5 text-purple-400" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-white">Verify on-chain</h2>
+                  <p className="text-sm text-gray-400">
+                    Classify transactions with AI and record results on the Accountability Chain.
+                  </p>
+                </div>
+              </div>
+              {verifyStatus && (
+                <div className="rounded-lg border border-purple-500/30 bg-purple-500/10 p-3 mb-4">
+                  <p className="text-xs text-purple-300">{verifyStatus}</p>
+                </div>
+              )}
+              {error && <p className="text-sm text-red-400 mb-4">{error}</p>}
+              <button
+                onClick={handleVerify}
+                disabled={verifying}
+                className="w-full py-3 rounded-xl bg-brand-gold text-brand-navy font-semibold text-sm transition-all hover:bg-brand-gold-light disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {verifying ? (
+                  <><Loader2 className="h-4 w-4 animate-spin" /> Verifying...</>
+                ) : (
+                  <><Shield className="h-4 w-4" /> Classify &amp; Verify</>
+                )}
+              </button>
+              <button
+                onClick={() => setStep('done')}
+                className="w-full mt-3 py-2 text-xs text-gray-400 hover:text-gray-300 transition-colors"
+              >
+                Skip for now
+              </button>
+            </>
+          )}
+
+          {/* Step 5: Done */}
           {step === 'done' && (
             <>
               <div className="text-center mb-6">

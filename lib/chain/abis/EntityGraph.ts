@@ -81,4 +81,54 @@ export const entityGraphAbi = [
     outputs: [{ name: '', type: 'address[]' }],
     stateMutability: 'view',
   },
+  // --- Write functions ---
+  {
+    type: 'function',
+    name: 'createEntity',
+    inputs: [
+      { name: 'entityId', type: 'bytes32' },
+      { name: 'entityType', type: 'uint8' },
+      { name: 'identityHash', type: 'bytes32' },
+      { name: 'label', type: 'string' },
+    ],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'createEdge',
+    inputs: [
+      { name: 'edgeId', type: 'bytes32' },
+      { name: 'entityId', type: 'bytes32' },
+      { name: 'org', type: 'address' },
+      { name: 'relationshipType', type: 'uint8' },
+      { name: 'startDate', type: 'uint48' },
+      { name: 'evidenceHash', type: 'bytes32' },
+    ],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  // --- Events ---
+  {
+    type: 'event',
+    name: 'EntityCreated',
+    inputs: [
+      { name: 'entityId', type: 'bytes32', indexed: true },
+      { name: 'entityType', type: 'uint8', indexed: false },
+      { name: 'label', type: 'string', indexed: false },
+    ],
+  },
+  {
+    type: 'event',
+    name: 'EdgeCreated',
+    inputs: [
+      { name: 'edgeId', type: 'bytes32', indexed: true },
+      { name: 'entityId', type: 'bytes32', indexed: true },
+      { name: 'org', type: 'address', indexed: true },
+    ],
+  },
+  // --- Custom Errors ---
+  { type: 'error', name: 'EntityAlreadyExists', inputs: [{ name: 'entityId', type: 'bytes32' }] },
+  { type: 'error', name: 'EdgeAlreadyExists', inputs: [{ name: 'edgeId', type: 'bytes32' }] },
+  { type: 'error', name: 'EntityNotFound', inputs: [{ name: 'entityId', type: 'bytes32' }] },
 ] as const;

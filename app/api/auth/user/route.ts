@@ -5,17 +5,11 @@ import { getSessionEmail } from '@/lib/auth-session';
 export async function GET() {
   try {
     const email = await getSessionEmail();
-    if (!email) {
-      return NextResponse.json({ user: null });
-    }
+    if (!email) return NextResponse.json({ user: null });
 
     const user = await prisma.user.findUnique({
       where: { email },
-      include: {
-        memberships: {
-          include: { org: true },
-        },
-      },
+      include: { memberships: { include: { org: true } } },
     });
 
     return NextResponse.json({ user });

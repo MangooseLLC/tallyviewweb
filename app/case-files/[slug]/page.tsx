@@ -3,17 +3,36 @@ import { notFound } from 'next/navigation';
 import {
   ArrowLeft,
   BadgeCheck,
-  Building2,
   ClipboardCheck,
   MapPin,
-  Scale,
-  Shield,
 } from 'lucide-react';
 import { caseFiles } from '@/lib/data/case-files';
+import { CaseTimeline } from '@/components/case-files/CaseTimeline';
+import { CaseEntityMap } from '@/components/case-files/CaseEntityMap';
+
+import type { Metadata } from 'next';
 
 type CaseFilePageProps = {
   params: { slug: string };
 };
+
+export function generateStaticParams() {
+  return caseFiles.map((c) => ({ slug: c.slug }));
+}
+
+export function generateMetadata({ params }: CaseFilePageProps): Metadata {
+  const cf = caseFiles.find((c) => c.slug === params.slug);
+  if (!cf) return { title: 'Case File Not Found' };
+  return {
+    title: `${cf.title} | Tallyview Case Files`,
+    description: cf.summary[0],
+    openGraph: {
+      title: cf.title,
+      description: cf.summary[0],
+      type: 'article',
+    },
+  };
+}
 
 function renderCommentaryLink(label: string, value?: string) {
   if (!value) return null;
@@ -94,9 +113,9 @@ export default function CaseFilePage({ params }: CaseFilePageProps) {
       <section className="space-y-4">
         <h2 className="text-xl font-semibold text-white">Money trail (how dollars moved)</h2>
         <div className="grid gap-4 md:grid-cols-2">
-          {caseFile.moneyTrail.map((item) => (
+          {caseFile.moneyTrail.map((item, idx) => (
             <div
-              key={item.amount}
+              key={`money-${idx}`}
               className="rounded-2xl border border-white/10 bg-white/5 p-4"
             >
               <p className="text-lg font-semibold text-brand-gold">{item.amount}</p>
@@ -109,9 +128,9 @@ export default function CaseFilePage({ params }: CaseFilePageProps) {
       <section className="space-y-4">
         <h2 className="text-xl font-semibold text-white">How it worked (mechanism)</h2>
         <div className="space-y-4">
-          {caseFile.mechanisms.map((mechanism) => (
+          {caseFile.mechanisms.map((mechanism, idx) => (
             <div
-              key={mechanism.title}
+              key={`mech-${idx}`}
               className="rounded-2xl border border-white/10 bg-white/5 p-4"
             >
               <h3 className="text-sm font-semibold text-white">{mechanism.title}</h3>
@@ -131,9 +150,9 @@ export default function CaseFilePage({ params }: CaseFilePageProps) {
       <section className="space-y-4">
         <h2 className="text-xl font-semibold text-white">Controls that should have stopped it (practical)</h2>
         <div className="space-y-4">
-          {caseFile.controls.map((control) => (
+          {caseFile.controls.map((control, idx) => (
             <div
-              key={control.title}
+              key={`ctrl-${idx}`}
               className="rounded-2xl border border-white/10 bg-white/5 p-4"
             >
               <h3 className="text-sm font-semibold text-white">{control.title}</h3>
@@ -150,55 +169,19 @@ export default function CaseFilePage({ params }: CaseFilePageProps) {
         </div>
       </section>
 
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold text-white">Outcome (where the case stands)</h2>
-        <div className="space-y-3">
-          {caseFile.outcome.map((event) => (
-            <div
-              key={event.date}
-              className="flex flex-col gap-1 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-gray-300 md:flex-row md:items-center md:justify-between"
-            >
-              <span className="font-semibold text-brand-gold">{event.date}</span>
-              <span>{event.description}</span>
-            </div>
-          ))}
-        </div>
-      </section>
+      <div className="grid gap-6 md:grid-cols-[1fr_280px]">
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold text-white">Outcome timeline</h2>
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+            <CaseTimeline events={caseFile.outcome} />
+          </div>
+        </section>
 
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold text-white">Entities referenced</h2>
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-gray-300">
-            <div className="flex items-center gap-2 text-brand-gold">
-              <Building2 className="h-4 w-4" />
-              Organization
-            </div>
-            <p className="mt-3">{caseFile.entities.organization}</p>
-          </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-gray-300">
-            <div className="flex items-center gap-2 text-brand-gold">
-              <Shield className="h-4 w-4" />
-              Public agencies
-            </div>
-            <ul className="mt-3 space-y-2">
-              {caseFile.entities.publicAgencies.map((agency) => (
-                <li key={agency}>{agency}</li>
-              ))}
-            </ul>
-          </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-gray-300">
-            <div className="flex items-center gap-2 text-brand-gold">
-              <Scale className="h-4 w-4" />
-              Vendors
-            </div>
-            <ul className="mt-3 space-y-2">
-              {caseFile.entities.vendors.map((vendor) => (
-                <li key={vendor}>{vendor}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </section>
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold text-white">Entities</h2>
+          <CaseEntityMap entities={caseFile.entities} />
+        </section>
+      </div>
 
       <section className="space-y-4">
         <h2 className="text-xl font-semibold text-white">Sources</h2>

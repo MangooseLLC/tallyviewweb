@@ -3,6 +3,7 @@ import { exchangeCodeForTokens } from '@/lib/qbo-auth';
 import { QBOClient } from '@/lib/qbo-client';
 import { prisma } from '@/lib/prisma';
 import { getSessionEmail } from '@/lib/auth-session';
+import { encrypt } from '@/lib/encryption';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,18 +14,22 @@ export async function GET(request: NextRequest) {
     const errorParam = searchParams.get('error');
 
     const sessionEmail = await getSessionEmail();
-    const redirectBase = sessionEmail ? '/onboarding' : '/quickbooks';
+    if (!sessionEmail) {
+      return NextResponse.redirect(
+        new URL('/login?redirect=/quickbooks&error=auth_required', request.url)
+      );
+    }
 
     if (errorParam) {
       console.error('OAuth error from Intuit:', errorParam);
       return NextResponse.redirect(
-        new URL(`${redirectBase}?error=oauth_denied`, request.url)
+        new URL('/onboarding?error=oauth_denied', request.url)
       );
     }
 
     if (!code || !realmId) {
       return NextResponse.redirect(
-        new URL(`${redirectBase}?error=missing_params`, request.url)
+        new URL('/onboarding?error=missing_params', request.url)
       );
     }
 
@@ -32,7 +37,7 @@ export async function GET(request: NextRequest) {
     if (!storedState || storedState !== state) {
       console.error('OAuth state mismatch:', { storedState, state });
       return NextResponse.redirect(
-        new URL(`${redirectBase}?error=state_mismatch`, request.url)
+        new URL('/onboarding?error=state_mismatch', request.url)
       );
     }
 
@@ -47,46 +52,29 @@ export async function GET(request: NextRequest) {
       // fall through with default name
     }
 
-    // If session user exists, link QBO to their existing org
-    if (sessionEmail) {
-      const user = await prisma.user.findUnique({
-        where: { email: sessionEmail },
-        include: { memberships: { where: { role: 'OWNER' }, take: 1 } },
-      });
+    const user = await prisma.user.findUnique({
+      where: { email: sessionEmail },
+      include: { memberships: { where: { role: 'OWNER' }, take: 1 } },
+    });
 
-      if (user && user.memberships.length > 0) {
-        await prisma.organization.update({
-          where: { id: user.memberships[0].orgId },
-          data: {
-            qboRealmId: realmId,
-            accessToken: tokens.access_token,
-            refreshToken: tokens.refresh_token,
-            tokenExpiresAt: new Date(Date.now() + tokens.expires_in * 1000),
-          },
-        });
-      }
-    } else {
-      // Unauthenticated flow: upsert by realmId (existing behavior)
-      await prisma.organization.upsert({
-        where: { qboRealmId: realmId },
-        create: {
+    if (user && user.memberships.length > 0) {
+      const encryptedAccess = process.env.TOKEN_ENCRYPTION_KEY ? encrypt(tokens.access_token) : tokens.access_token;
+      const encryptedRefresh = process.env.TOKEN_ENCRYPTION_KEY ? encrypt(tokens.refresh_token) : tokens.refresh_token;
+
+      await prisma.organization.update({
+        where: { id: user.memberships[0].orgId },
+        data: {
           name: companyName,
           qboRealmId: realmId,
-          accessToken: tokens.access_token,
-          refreshToken: tokens.refresh_token,
-          tokenExpiresAt: new Date(Date.now() + tokens.expires_in * 1000),
-        },
-        update: {
-          name: companyName,
-          accessToken: tokens.access_token,
-          refreshToken: tokens.refresh_token,
+          accessToken: encryptedAccess,
+          refreshToken: encryptedRefresh,
           tokenExpiresAt: new Date(Date.now() + tokens.expires_in * 1000),
         },
       });
     }
 
     const response = NextResponse.redirect(
-      new URL(`${redirectBase}?connected=true`, request.url)
+      new URL('/onboarding?connected=true', request.url)
     );
 
     response.cookies.delete('qbo_oauth_state');
@@ -94,15 +82,8 @@ export async function GET(request: NextRequest) {
     return response;
   } catch (error) {
     console.error('OAuth callback error:', error);
-    const sessionEmail = await getSessionEmail();
-    const redirectBase = sessionEmail ? '/onboarding' : '/quickbooks';
     return NextResponse.redirect(
-      new URL(
-        `${redirectBase}?error=callback_failed&details=${encodeURIComponent(
-          error instanceof Error ? error.message : 'Unknown error'
-        )}`,
-        request.url
-      )
+      new URL('/onboarding?error=callback_failed', request.url)
     );
   }
 }

@@ -1,28 +1,22 @@
 import { keccak256, toHex } from 'viem';
 import type { MonthlyFinancialPackage } from './ingest';
 import { aggregateVendorPayments, aggregateExpenses } from './ingest';
+import { AnomalySeverity, AnomalyCategory } from '@/lib/chain/types';
 
 // ---------------------------------------------------------------------------
 //  Output type — matches AnomalyRegistry.recordAnomaly() parameter shape
 // ---------------------------------------------------------------------------
 
 export interface AnomalyFinding {
-  severity: number;   // 0=Info, 1=Low, 2=Medium, 3=High, 4=Critical
-  category: number;   // maps to TallyviewTypes.AnomalyCategory
+  severity: AnomalySeverity;
+  category: AnomalyCategory;
   title: string;
   confidenceBps: number;
   evidenceHash: `0x${string}`;
 }
 
-// Severity enum mirrors TallyviewTypes.AnomalySeverity
-const SEV = { Info: 0, Low: 1, Medium: 2, High: 3, Critical: 4 } as const;
-
-// Category enum mirrors TallyviewTypes.AnomalyCategory
-const CAT = {
-  FinancialHealth: 0, Governance: 1, FraudPattern: 2,
-  CompensationOutlier: 3, VendorConcentration: 4, ExpenseAllocation: 5,
-  RevenueAnomaly: 6, RelatedParty: 7, DocumentProvenance: 8, Custom: 9,
-} as const;
+const SEV = AnomalySeverity;
+const CAT = AnomalyCategory;
 
 function evidenceHash(data: unknown): `0x${string}` {
   return keccak256(toHex(JSON.stringify(data)));
@@ -44,7 +38,8 @@ function detectCompensationOutlier(months: MonthlyFinancialPackage[]): AnomalyFi
   if (comps.length < 2) return [];
 
   const sorted = [...comps].sort((a, b) => a - b);
-  const median = sorted[Math.floor(sorted.length / 2)];
+  const mid = Math.floor(sorted.length / 2);
+  const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
   const ceo = latest.compensation.find((c) => c.title.includes('CEO') || c.title.includes('Executive Director'));
 
   if (ceo && ceo.annualCompensation > median * 3) {
@@ -138,6 +133,7 @@ function detectRevenueAnomaly(months: MonthlyFinancialPackage[]): AnomalyFinding
 
   for (let i = 3; i < months.length; i++) {
     const trailing = (months[i - 1].revenue.total + months[i - 2].revenue.total + months[i - 3].revenue.total) / 3;
+    if (trailing === 0) continue;
     const current = months[i].revenue.total;
     const deviation = Math.abs(current - trailing) / trailing;
 

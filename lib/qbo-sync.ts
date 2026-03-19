@@ -2,6 +2,7 @@
 import { prisma } from '@/lib/prisma';
 import { QBOClient } from '@/lib/qbo-client';
 import { refreshAccessToken } from '@/lib/qbo-auth';
+import { decrypt, isEncrypted, encrypt } from '@/lib/encryption';
 
 export interface SyncResult {
   accounts: number;
@@ -55,27 +56,28 @@ export async function syncOrganization(
     throw new Error('Organization has no QuickBooks connection');
   }
 
-  let accessToken = org.accessToken;
+  const decryptIfNeeded = (val: string) => isEncrypted(val) ? decrypt(val) : val;
+  const encryptIfEnabled = (val: string) => process.env.TOKEN_ENCRYPTION_KEY ? encrypt(val) : val;
 
-  // Always try to refresh if we have a refresh token — sandbox tokens can be
-  // invalidated before their stored expiry
+  let accessToken = decryptIfNeeded(org.accessToken);
+
   const shouldRefresh =
     org.refreshToken &&
     (
       (org.tokenExpiresAt && new Date() >= org.tokenExpiresAt) ||
-      await isTokenInvalid(org.accessToken, org.qboRealmId)
+      await isTokenInvalid(accessToken, org.qboRealmId)
     );
 
   if (shouldRefresh && org.refreshToken) {
     try {
       onProgress?.({ type: 'step', step: 'auth', label: 'Refreshing token', status: 'syncing' });
-      const tokens = await refreshAccessToken(org.refreshToken);
+      const tokens = await refreshAccessToken(decryptIfNeeded(org.refreshToken));
       accessToken = tokens.access_token;
       await prisma.organization.update({
         where: { id: orgId },
         data: {
-          accessToken: tokens.access_token,
-          refreshToken: tokens.refresh_token,
+          accessToken: encryptIfEnabled(tokens.access_token),
+          refreshToken: encryptIfEnabled(tokens.refresh_token),
           tokenExpiresAt: new Date(Date.now() + tokens.expires_in * 1000),
         },
       });

@@ -12,6 +12,7 @@ import {
   Scale,
   ArrowRight,
   FileText,
+  UserCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
@@ -28,6 +29,13 @@ const roleRoutes: Record<PersonaRole, string> = {
   foundation: '/foundation/dashboard',
   regulator: '/regulator/dashboard',
   investigator: '/investigator/dashboard',
+};
+
+const roleHighlights: Record<PersonaRole, string> = {
+  nonprofit: 'Manages $4.2M annual budget across 3 programs',
+  foundation: 'Oversees $12M in active grants to 24 grantees',
+  regulator: 'Monitors 2,400+ nonprofits across Oregon',
+  investigator: 'Leads forensic investigations into nonprofit fraud',
 };
 
 export default function DemoPage() {
@@ -57,7 +65,7 @@ export default function DemoPage() {
             Explore the Demo
           </h1>
           <p className="mt-3 text-sm text-gray-400 max-w-md mx-auto">
-            Choose a persona to see Tallyview from different perspectives.
+            Choose a persona to see Tallyview from different perspectives. All data is synthetic.
           </p>
         </div>
 
@@ -82,7 +90,10 @@ export default function DemoPage() {
                   </div>
                   <p className="text-sm text-gray-400 mt-0.5">{persona.title}</p>
                   <p className="text-sm text-brand-gold/80 font-medium mt-1">{persona.organization}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{persona.orgDetail}</p>
+                  <p className="text-[11px] text-gray-500 mt-0.5 flex items-center gap-1">
+                    <UserCircle className="h-3 w-3" />
+                    {roleHighlights[persona.role]}
+                  </p>
                   <div className="mt-3 pt-3 border-t border-white/5">
                     <p className="text-xs text-gray-400">{persona.description}</p>
                   </div>
@@ -92,16 +103,25 @@ export default function DemoPage() {
           ))}
         </div>
 
+        <div className="mt-8 flex items-center gap-4">
+          <Link
+            href="/signup"
+            className="inline-flex items-center gap-2 rounded-lg bg-brand-gold px-5 py-2.5 text-sm font-semibold text-brand-navy transition hover:bg-brand-gold-light"
+          >
+            Create a real account
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+          <Link
+            href="/case-files"
+            className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition"
+          >
+            <FileText className="h-3.5 w-3.5" />
+            Case Files
+          </Link>
+        </div>
       </div>
 
-      <footer className="py-4 text-center space-y-2">
-        <Link
-          href="/case-files"
-          className="inline-flex items-center gap-2 text-xs font-semibold text-brand-gold hover:text-brand-gold-light"
-        >
-          <FileText className="h-3.5 w-3.5" />
-          Tallyview Case Files
-        </Link>
+      <footer className="py-4 text-center">
         <p className="text-xs text-gray-500">
           Demo environment with synthetic data &bull; Tallyview &copy; 2026
         </p>

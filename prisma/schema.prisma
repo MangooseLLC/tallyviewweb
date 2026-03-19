@@ -87,12 +87,13 @@ model Organization {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  transactions     Transaction[]
-  accounts         Account[]
-  memberships      OrgMembership[]
-  invitations      Invitation[]
-  syncJobs         SyncJob[]
-  auditSubmissions AuditSubmission[]
+  transactions      Transaction[]
+  accounts          Account[]
+  memberships       OrgMembership[]
+  invitations       Invitation[]
+  syncJobs          SyncJob[]
+  auditSubmissions  AuditSubmission[]
+  transparencyScore TransparencyScore?
 }
 
 model Account {
@@ -179,4 +180,34 @@ model AuditSubmission {
 
   @@unique([orgId, year, month])
   @@index([orgId])
+}
+
+// ---------------------------------------------------------------------------
+//  Transparency Scores
+// ---------------------------------------------------------------------------
+
+model TransparencyScore {
+  id                  String        @id @default(cuid())
+  ein                 String        @unique
+  orgId               String?       @unique
+  org                 Organization? @relation(fields: [orgId], references: [id], onDelete: SetNull)
+  name                String
+  state               String?
+  nteeCode            String?
+  overallScore        Int
+  financialHealth     Int
+  governanceScore     Int
+  transparencyScore   Int
+  complianceScore     Int
+  programExpenseRatio Float?
+  revenueTotal        Float?
+  assetsTotal         Float?
+  filingYear          Int?
+  dataVintage         String?
+  rawData             Json?
+  computedAt          DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  @@index([overallScore(sort: Desc)])
+  @@index([state])
 }

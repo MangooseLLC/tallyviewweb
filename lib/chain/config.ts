@@ -1,7 +1,7 @@
 import { type Address } from 'viem';
 
 export const FUJI_CHAIN_ID = 43113;
-export const FUJI_RPC_URL = 'https://api.avax-test.network/ext/bc/C/rpc';
+export const FUJI_RPC_URL = process.env.FUJI_RPC_URL ?? 'https://api.avax-test.network/ext/bc/C/rpc';
 
 export const CONTRACTS = {
   auditLedger: '0x308C17d0a3ABDb1f19a73107E0BE4Ef9f97c9127' as Address,

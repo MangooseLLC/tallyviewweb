@@ -1,24 +1,20 @@
-import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+import type { User } from '@supabase/supabase-js';
 
-export const AUTH_EMAIL_COOKIE = 'tallyview_email';
-
-export async function getSessionEmail() {
-  const cookieStore = await cookies();
-  const email = cookieStore.get(AUTH_EMAIL_COOKIE)?.value?.trim().toLowerCase() ?? '';
-  return email || null;
+async function getSessionUser(): Promise<User | null> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    return user;
+  } catch {
+    return null;
+  }
 }
 
-export function setSessionEmailCookie(response: NextResponse, email: string) {
-  response.cookies.set(AUTH_EMAIL_COOKIE, email.trim().toLowerCase(), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 60 * 60 * 24 * 30, // 30 days
-  });
+export async function getSessionEmail(): Promise<string | null> {
+  return (await getSessionUser())?.email?.trim().toLowerCase() ?? null;
 }
 
-export function clearSessionEmailCookie(response: NextResponse) {
-  response.cookies.delete(AUTH_EMAIL_COOKIE);
+export async function getSessionUserId(): Promise<string | null> {
+  return (await getSessionUser())?.id ?? null;
 }

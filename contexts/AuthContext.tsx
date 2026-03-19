@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { Persona } from '@/lib/types';
 import { personas } from '@/lib/data/personas';
+import { createClient } from '@/lib/supabase/client';
 
 interface AppUser {
   id: string;
@@ -28,7 +29,6 @@ interface AuthContextType {
   login: (personaId: string) => void;
   logout: () => void;
   switchPersona: (personaId: string) => void;
-  continueWithEmail: (email: string) => Promise<{ error?: string; isNewUser?: boolean }>;
   signOut: () => Promise<void>;
 }
 
@@ -42,20 +42,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function init() {
-      // Load session user first.
-      try {
-        const res = await fetch('/api/auth/user');
-        const data = await res.json();
-        if (data.user) {
-          setAppUser(data.user);
-          try { localStorage.removeItem(PERSONA_KEY); } catch {}
-          setIsLoading(false);
-          return;
-        }
-      } catch {}
+    const supabase = createClient();
+    const controller = new AbortController();
+    let initDone = false;
 
-      // Fall back to demo persona
+    async function fetchAppUser(signal: AbortSignal): Promise<AppUser | null> {
+      const res = await fetch('/api/auth/user', { signal });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.user ?? null;
+    }
+
+    async function init() {
+      try {
+        const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+
+        if (supabaseUser && !controller.signal.aborted) {
+          const user = await fetchAppUser(controller.signal);
+          if (user && !controller.signal.aborted) {
+            setAppUser(user);
+            try { localStorage.removeItem(PERSONA_KEY); } catch {}
+            setIsLoading(false);
+            initDone = true;
+            return;
+          }
+        }
+      } catch {
+        if (controller.signal.aborted) return;
+      }
+
       try {
         const stored = localStorage.getItem(PERSONA_KEY);
         if (stored) {
@@ -64,10 +79,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } catch {}
 
+      initDone = true;
       setIsLoading(false);
     }
 
     init();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event) => {
+        if (event === 'SIGNED_IN') {
+          if (!initDone) controller.abort();
+          const signInController = new AbortController();
+          try {
+            const user = await fetchAppUser(signInController.signal);
+            if (user) {
+              setAppUser(user);
+              setCurrentPersona(null);
+              try { localStorage.removeItem(PERSONA_KEY); } catch {}
+            }
+          } catch {}
+          setIsLoading(false);
+        } else if (event === 'SIGNED_OUT') {
+          setAppUser(null);
+        }
+      },
+    );
+
+    return () => {
+      controller.abort();
+      subscription.unsubscribe();
+    };
   }, []);
 
   // --- Demo persona methods ---
@@ -94,32 +135,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const continueWithEmail = useCallback(async (email: string): Promise<{ error?: string; isNewUser?: boolean }> => {
-    setCurrentPersona(null);
-    try { localStorage.removeItem(PERSONA_KEY); } catch {}
-
-    try {
-      const res = await fetch('/api/auth/provision', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        return { error: data.error || 'Failed to continue with email. Please try again.' };
-      }
-      const data = await res.json();
-      if (!data.user) {
-        return { error: 'Failed to continue with email. Please try again.' };
-      }
-      setAppUser(data.user);
-      return { isNewUser: !!data.isNew };
-    } catch {
-      return { error: 'Network error during account setup. Please try again.' };
-    }
-  }, []);
-
   const signOut = useCallback(async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
     await fetch('/api/auth/logout', { method: 'POST' });
     setAppUser(null);
     setCurrentPersona(null);
@@ -139,7 +157,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       logout,
       switchPersona,
-      continueWithEmail,
       signOut,
     }}>
       {children}

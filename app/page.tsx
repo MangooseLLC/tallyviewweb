@@ -13,32 +13,15 @@ import ArchitectureDiagram from '@/components/landing/ArchitectureDiagram';
 import VerifiedBadge from '@/components/landing/VerifiedBadge';
 import InstitutionalProof from '@/components/landing/InstitutionalProof';
 import ValidatorNetwork from '@/components/landing/ValidatorNetwork';
+import { PublicNav } from '@/components/layouts/PublicNav';
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-white text-slate-900">
       <section className="relative overflow-hidden bg-gradient-to-br from-brand-navy via-brand-navy to-brand-navy-light text-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(245,186,66,0.16),_transparent_45%)]" />
-        <div className="relative mx-auto flex w-full max-w-6xl flex-col px-6 pb-16 pt-8">
-          <nav className="flex items-center justify-between">
-            <Link href="/" className="inline-flex items-center gap-3">
-              <Image
-                src="/tallyview-logo.svg"
-                alt="Tallyview"
-                width={200}
-                height={56}
-                className="h-9 w-auto brightness-0 invert"
-                priority
-              />
-            </Link>
-            <Link
-              href="/demo"
-              className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white transition hover:border-brand-gold/60 hover:text-brand-gold"
-            >
-              View Demo
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </nav>
+        <div className="relative mx-auto flex w-full max-w-6xl flex-col pb-16 pt-0">
+          <PublicNav variant="dark" />
 
           <div className="mt-12 grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div>
@@ -56,7 +39,7 @@ export default function Home() {
               </p>
               <div className="mt-8 flex max-w-xl gap-3">
                 <Link
-                  href="/dashboard"
+                  href="/signup"
                   className="inline-flex items-center gap-2 rounded-xl bg-brand-gold px-5 py-3 text-sm font-semibold text-brand-navy transition hover:bg-brand-gold-light"
                 >
                   Get Started
@@ -270,6 +253,14 @@ export default function Home() {
                     className="text-sm text-slate-500 transition hover:text-brand-navy"
                   >
                     Case Files
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/transparency"
+                    className="text-sm text-slate-500 transition hover:text-brand-navy"
+                  >
+                    Transparency Scores
                   </Link>
                 </li>
                 <li>
