@@ -28,7 +28,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   }
 
   if (!isAuthenticated) {
-    return <div className="min-h-screen bg-gray-50" />;
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <div className="h-8 w-8 rounded-full border-2 border-brand-gold border-t-transparent animate-spin" />
+      </div>
+    );
   }
 
   return (

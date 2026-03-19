@@ -65,12 +65,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return data.user ?? null;
     }
 
+    async function provisionAndFetchAppUser(signal: AbortSignal): Promise<AppUser | null> {
+      const provisionRes = await fetch('/api/auth/provision', {
+        method: 'POST',
+        signal,
+      });
+
+      if (!provisionRes.ok) return null;
+
+      return fetchAppUser(signal);
+    }
+
     async function init() {
       try {
         const { data: { user: supabaseUser } } = await supabase.auth.getUser();
 
         if (supabaseUser && !controller.signal.aborted) {
-          const user = await fetchAppUser(controller.signal);
+          let user = await fetchAppUser(controller.signal);
+          if (!user && !controller.signal.aborted) {
+            user = await provisionAndFetchAppUser(controller.signal);
+          }
           if (user && !controller.signal.aborted) {
             setAppUser(user);
             try { localStorage.removeItem(PERSONA_KEY); } catch {}
@@ -113,7 +127,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (!initDone) controller.abort();
           const signInController = new AbortController();
           try {
-            const user = await fetchAppUser(signInController.signal);
+            let user = await fetchAppUser(signInController.signal);
+            if (!user) {
+              user = await provisionAndFetchAppUser(signInController.signal);
+            }
             if (user) {
               setAppUser(user);
               setCurrentPersona(null);

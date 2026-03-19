@@ -28,10 +28,18 @@ function createMiddlewareSupabase(request: NextRequest, response: NextResponse) 
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next({ request });
-  const supabase = createMiddlewareSupabase(request, response);
+  let user = null;
 
-  // Refresh session — this is the critical call that keeps cookies alive
-  const { data: { user } } = await supabase.auth.getUser();
+  try {
+    const supabase = createMiddlewareSupabase(request, response);
+
+    // If Supabase is temporarily unavailable, continue as signed out
+    // instead of failing the whole request and rendering a blank page.
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch (error) {
+    console.error('Middleware auth refresh failed:', error);
+  }
 
   const { pathname } = request.nextUrl;
 
