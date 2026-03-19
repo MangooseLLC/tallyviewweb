@@ -6,13 +6,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowRight, Mail } from 'lucide-react';
+import { ArrowRight, KeyRound, Mail } from 'lucide-react';
 
 export default function SignupPage() {
   const router = useRouter();
   const { appUser, isAuthenticated, isDemoMode, isLoading, logout, signOut } = useAuth();
   const [email, setEmail] = useState('');
   const [emailSent, setEmailSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -34,12 +35,8 @@ export default function SignupPage() {
 
     try {
       const supabase = createClient();
-      const origin = window.location.origin;
       const { error: authError } = await supabase.auth.signInWithOtp({
         email: email.trim().toLowerCase(),
-        options: {
-          emailRedirectTo: `${origin}/auth/callback?flow=signup`,
-        },
       });
 
       if (authError) {
@@ -48,6 +45,44 @@ export default function SignupPage() {
       }
 
       setEmailSent(true);
+    } catch {
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleVerifyCode(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    try {
+      const supabase = createClient();
+      const { error: verifyError } = await supabase.auth.verifyOtp({
+        email: email.trim().toLowerCase(),
+        token: otpCode.trim(),
+        type: 'email',
+      });
+
+      if (verifyError) {
+        setError(verifyError.message);
+        return;
+      }
+
+      const provisionRes = await fetch('/api/auth/provision', {
+        method: 'POST',
+      });
+
+      if (!provisionRes.ok) {
+        const data = await provisionRes.json().catch(() => ({}));
+        setError(data.error || 'Account created but setup failed. Try signing in.');
+        return;
+      }
+
+      const provisionData = await provisionRes.json().catch(() => ({}));
+      router.push(provisionData.isNew ? '/onboarding' : '/dashboard');
+      router.refresh();
     } catch {
       setError('Something went wrong. Please try again.');
     } finally {
@@ -127,7 +162,7 @@ export default function SignupPage() {
         <div className="rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
           <h1 className="text-xl font-semibold text-white">Create account</h1>
           <p className="mt-1 text-sm text-slate-300">
-            Start with a one-time email link
+            Start with a one-time email code
           </p>
 
           {emailSent ? (
@@ -138,15 +173,57 @@ export default function SignupPage() {
                   <div>
                     <p className="font-medium text-white">Check your email</p>
                     <p className="mt-1 text-slate-300">
-                      We sent a one-time sign-in link to `{email.trim().toLowerCase()}`.
+                      We sent a 6-digit sign-in code to `{email.trim().toLowerCase()}`.
                     </p>
                   </div>
                 </div>
               </div>
 
+              <form onSubmit={handleVerifyCode} className="space-y-4">
+                <div>
+                  <label htmlFor="otp" className="block text-xs font-medium text-slate-300">
+                    Verification Code
+                  </label>
+                  <div className="relative mt-1.5">
+                    <input
+                      id="otp"
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      required
+                      maxLength={6}
+                      value={otpCode}
+                      onChange={e => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 pl-10 text-sm tracking-[0.3em] text-white placeholder-slate-400 outline-none focus:border-brand-gold/50 focus:ring-1 focus:ring-brand-gold/50"
+                      placeholder="123456"
+                    />
+                    <KeyRound className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  </div>
+                </div>
+
+                {error && (
+                  <p className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-300">
+                    {error}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={loading || otpCode.trim().length < 6}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-gold px-4 py-2.5 text-sm font-semibold text-brand-navy transition hover:bg-brand-gold-light disabled:opacity-50"
+                >
+                  {loading ? 'Verifying code...' : 'Verify Code'}
+                  {!loading && <ArrowRight className="h-3.5 w-3.5" />}
+                </button>
+              </form>
+
               <button
                 type="button"
-                onClick={() => setEmailSent(false)}
+                onClick={() => {
+                  setEmailSent(false);
+                  setOtpCode('');
+                  setError(null);
+                }}
                 className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10"
               >
                 Use a different email
@@ -180,7 +257,7 @@ export default function SignupPage() {
                 disabled={loading}
                 className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-gold px-4 py-2.5 text-sm font-semibold text-brand-navy transition hover:bg-brand-gold-light disabled:opacity-50"
               >
-                {loading ? 'Sending link...' : 'Email Me a Sign-Up Link'}
+                {loading ? 'Sending code...' : 'Email Me a Sign-Up Code'}
                 {!loading && <ArrowRight className="h-3.5 w-3.5" />}
               </button>
             </form>
