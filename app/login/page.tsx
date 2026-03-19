@@ -1,19 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { ArrowRight, Mail } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { appUser, isAuthenticated, isDemoMode, isLoading, logout, signOut } = useAuth();
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -35,20 +35,23 @@ export default function LoginPage() {
 
     try {
       const supabase = createClient();
-      const { error: authError } = await supabase.auth.signInWithPassword({
+      const origin = window.location.origin;
+      const next = searchParams.get('redirect');
+      const nextPath = next && next.startsWith('/') ? next : '/dashboard';
+      const { error: authError } = await supabase.auth.signInWithOtp({
         email: email.trim().toLowerCase(),
-        password,
+        options: {
+          shouldCreateUser: false,
+          emailRedirectTo: `${origin}/auth/callback?flow=login&next=${encodeURIComponent(nextPath)}`,
+        },
       });
 
       if (authError) {
-        setError(authError.message === 'Invalid login credentials'
-          ? 'Invalid email or password.'
-          : authError.message);
+        setError(authError.message);
         return;
       }
 
-      router.push('/dashboard');
-      router.refresh();
+      setEmailSent(true);
     } catch {
       setError('Something went wrong. Please try again.');
     } finally {
@@ -128,64 +131,64 @@ export default function LoginPage() {
         <div className="rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
           <h1 className="text-xl font-semibold text-white">Sign in</h1>
           <p className="mt-1 text-sm text-slate-300">
-            Access your nonprofit dashboard
+            Sign in with a secure one-time email link
           </p>
 
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-xs font-medium text-slate-300">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                className="mt-1.5 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder-slate-400 outline-none focus:border-brand-gold/50 focus:ring-1 focus:ring-brand-gold/50"
-                placeholder="you@nonprofit.org"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-xs font-medium text-slate-300">
-                Password
-              </label>
-              <div className="relative mt-1.5">
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 pr-10 text-sm text-white placeholder-slate-400 outline-none focus:border-brand-gold/50 focus:ring-1 focus:ring-brand-gold/50"
-                  placeholder="Your password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+          {emailSent ? (
+            <div className="mt-6 space-y-4">
+              <div className="rounded-lg border border-brand-gold/20 bg-brand-gold/10 px-4 py-3 text-sm text-slate-200">
+                <div className="flex items-start gap-3">
+                  <Mail className="mt-0.5 h-4 w-4 text-brand-gold" />
+                  <div>
+                    <p className="font-medium text-white">Check your email</p>
+                    <p className="mt-1 text-slate-300">
+                      We sent a one-time sign-in link to `{email.trim().toLowerCase()}`.
+                    </p>
+                  </div>
+                </div>
               </div>
+
+              <button
+                type="button"
+                onClick={() => setEmailSent(false)}
+                className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10"
+              >
+                Use a different email
+              </button>
             </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+              <div>
+                <label htmlFor="email" className="block text-xs font-medium text-slate-300">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  className="mt-1.5 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder-slate-400 outline-none focus:border-brand-gold/50 focus:ring-1 focus:ring-brand-gold/50"
+                  placeholder="you@nonprofit.org"
+                />
+              </div>
 
-            {error && (
-              <p className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-300">
-                {error}
-              </p>
-            )}
+              {error && (
+                <p className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-300">
+                  {error}
+                </p>
+              )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-gold px-4 py-2.5 text-sm font-semibold text-brand-navy transition hover:bg-brand-gold-light disabled:opacity-50"
-            >
-              {loading ? 'Signing in...' : 'Sign In'}
-              {!loading && <ArrowRight className="h-3.5 w-3.5" />}
-            </button>
-          </form>
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-gold px-4 py-2.5 text-sm font-semibold text-brand-navy transition hover:bg-brand-gold-light disabled:opacity-50"
+              >
+                {loading ? 'Sending link...' : 'Email Me a Sign-In Link'}
+                {!loading && <ArrowRight className="h-3.5 w-3.5" />}
+              </button>
+            </form>
+          )}
 
           <div className="mt-6 text-center text-sm text-slate-400">
             Don&apos;t have an account?{' '}
