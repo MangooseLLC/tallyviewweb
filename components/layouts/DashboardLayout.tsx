@@ -28,7 +28,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   }
 
   if (!isAuthenticated) {
-    return null;
+    return <div className="min-h-screen bg-gray-50" />;
   }
 
   return (

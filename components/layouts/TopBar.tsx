@@ -45,10 +45,11 @@ export function TopBar() {
   const handleLogout = async () => {
     if (isDemoMode) {
       logout();
+      router.push('/demo');
     } else {
       await signOut();
+      router.push('/login');
     }
-    router.push('/login');
   };
 
   // Display info for real auth vs demo mode
