@@ -76,7 +76,7 @@ export function PublicNav({ variant = 'light' }: PublicNavProps) {
                 : 'bg-brand-navy text-white hover:bg-brand-navy-light',
             )}
           >
-            Get Started
+            Sign Up
             <ArrowRight className="h-3 w-3" />
           </Link>
         </div>
@@ -122,7 +122,7 @@ export function PublicNav({ variant = 'light' }: PublicNavProps) {
                 isDark ? 'bg-brand-gold text-brand-navy' : 'bg-brand-navy text-white',
               )}
             >
-              Get Started <ArrowRight className="h-3 w-3" />
+              Sign Up <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
         </div>
