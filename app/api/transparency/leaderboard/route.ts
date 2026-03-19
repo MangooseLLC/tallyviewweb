@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/transparency/leaderboard?limit=25&state=CA
  * Returns top-scoring organizations from the cached TransparencyScore table.

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
@@ -10,7 +10,6 @@ import { ArrowRight, Mail } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { appUser, isAuthenticated, isDemoMode, isLoading, logout, signOut } = useAuth();
   const [email, setEmail] = useState('');
   const [emailSent, setEmailSent] = useState(false);
@@ -36,7 +35,7 @@ export default function LoginPage() {
     try {
       const supabase = createClient();
       const origin = window.location.origin;
-      const next = searchParams.get('redirect');
+      const next = new URLSearchParams(window.location.search).get('redirect');
       const nextPath = next && next.startsWith('/') ? next : '/dashboard';
       const { error: authError } = await supabase.auth.signInWithOtp({
         email: email.trim().toLowerCase(),
