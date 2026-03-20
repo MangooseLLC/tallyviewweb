@@ -75,8 +75,17 @@ export default function LoginPage() {
         return;
       }
 
-      router.push(nextPath);
-      router.refresh();
+      const provisionRes = await fetch('/api/auth/provision', {
+        method: 'POST',
+      });
+
+      if (!provisionRes.ok) {
+        const data = await provisionRes.json().catch(() => ({}));
+        setError(data.error || 'Signed in, but failed to load your account.');
+        return;
+      }
+
+      window.location.assign(nextPath);
     } catch {
       setError('Something went wrong. Please try again.');
     } finally {

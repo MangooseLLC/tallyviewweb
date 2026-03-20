@@ -81,8 +81,7 @@ export default function SignupPage() {
       }
 
       const provisionData = await provisionRes.json().catch(() => ({}));
-      router.push(provisionData.isNew ? '/onboarding' : '/dashboard');
-      router.refresh();
+      window.location.assign(provisionData.isNew ? '/onboarding' : '/dashboard');
     } catch {
       setError('Something went wrong. Please try again.');
     } finally {
