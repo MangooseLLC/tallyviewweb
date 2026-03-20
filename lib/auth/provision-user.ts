@@ -30,39 +30,40 @@ export async function provisionUserFromSupabase(
   const supabaseId = supabaseUser.id;
   const email = supabaseUser.email.trim().toLowerCase();
 
-  return prisma.$transaction(async (tx) => {
-    const existing = await tx.user.findFirst({
-      where: { OR: [{ supabaseId }, { email }] },
-      include: { memberships: { include: { org: true } } },
-    });
+  const existing = await prisma.user.findFirst({
+    where: { OR: [{ supabaseId }, { email }] },
+    include: { memberships: { include: { org: true } } },
+  });
 
-    if (existing) {
-      if (existing.supabaseId !== supabaseId) {
-        await tx.user.update({
-          where: { id: existing.id },
-          data: { supabaseId },
-        });
-      }
-      return { user: existing, isNew: false };
+  if (existing) {
+    if (existing.supabaseId !== supabaseId) {
+      const updatedUser = await prisma.user.update({
+        where: { id: existing.id },
+        data: { supabaseId },
+        include: { memberships: { include: { org: true } } },
+      });
+      return { user: updatedUser, isNew: false };
     }
 
-    const newUser = await tx.user.create({
-      data: { supabaseId, email, name: null, avatarUrl: null },
-    });
+    return { user: existing, isNew: false };
+  }
 
-    const org = await tx.organization.create({
-      data: { name: `${email.split('@')[0]}'s Organization` },
-    });
-
-    await tx.orgMembership.create({
-      data: { userId: newUser.id, orgId: org.id, role: 'OWNER' },
-    });
-
-    const user = await tx.user.findUnique({
-      where: { id: newUser.id },
-      include: { memberships: { include: { org: true } } },
-    });
-
-    return { user, isNew: true };
+  const newUser = await prisma.user.create({
+    data: { supabaseId, email, name: null, avatarUrl: null },
   });
+
+  const org = await prisma.organization.create({
+    data: { name: `${email.split('@')[0]}'s Organization` },
+  });
+
+  await prisma.orgMembership.create({
+    data: { userId: newUser.id, orgId: org.id, role: 'OWNER' },
+  });
+
+  const user = await prisma.user.findUnique({
+    where: { id: newUser.id },
+    include: { memberships: { include: { org: true } } },
+  });
+
+  return { user, isNew: true };
 }
