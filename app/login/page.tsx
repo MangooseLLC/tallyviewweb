@@ -8,13 +8,19 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { ArrowRight, KeyRound, Mail } from 'lucide-react';
 
+interface AuthErrorState {
+  message: string;
+  stage?: string;
+  details?: string;
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const { appUser, isAuthenticated, isDemoMode, isLoading, logout, signOut } = useAuth();
   const [email, setEmail] = useState('');
   const [emailSent, setEmailSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<AuthErrorState | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function handleExitSession() {
@@ -43,7 +49,7 @@ export default function LoginPage() {
       });
 
       if (authError) {
-        setError(authError.message);
+        setError({ message: authError.message });
         return;
       }
 
@@ -61,23 +67,32 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const supabase = createClient();
       const next = new URLSearchParams(window.location.search).get('redirect');
       const nextPath = next && next.startsWith('/') ? next : '/dashboard';
-      const { error: verifyError } = await supabase.auth.verifyOtp({
-        email: email.trim().toLowerCase(),
-        token: otpCode.trim(),
-        type: 'email',
+      const verifyRes = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          token: otpCode.trim(),
+          flow: 'login',
+          next: nextPath,
+        }),
       });
+      const verifyData = await verifyRes.json().catch(() => ({}));
 
-      if (verifyError) {
-        setError(verifyError.message);
+      if (!verifyRes.ok) {
+        setError({
+          message: verifyData.error || 'Failed to verify code.',
+          stage: typeof verifyData.stage === 'string' ? verifyData.stage : undefined,
+          details: typeof verifyData.details === 'string' ? verifyData.details : undefined,
+        });
         return;
       }
 
-      window.location.assign(nextPath);
+      window.location.assign(verifyData.redirectPath || nextPath);
     } catch {
-      setError('Something went wrong. Please try again.');
+      setError({ message: 'Something went wrong. Please try again.' });
     } finally {
       setLoading(false);
     }
@@ -195,9 +210,15 @@ export default function LoginPage() {
                 </div>
 
                 {error && (
-                  <p className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-300">
-                    {error}
-                  </p>
+                  <div className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-300">
+                    <p>{error.message}</p>
+                    {error.stage && (
+                      <p className="mt-1 text-red-200/80">Step: `{error.stage}`</p>
+                    )}
+                    {error.details && (
+                      <p className="mt-1 break-words text-red-200/80">{error.details}</p>
+                    )}
+                  </div>
                 )}
 
                 <button
@@ -240,9 +261,15 @@ export default function LoginPage() {
               </div>
 
               {error && (
-                <p className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-300">
-                  {error}
-                </p>
+                <div className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-300">
+                  <p>{error.message}</p>
+                  {error.stage && (
+                    <p className="mt-1 text-red-200/80">Step: `{error.stage}`</p>
+                  )}
+                  {error.details && (
+                    <p className="mt-1 break-words text-red-200/80">{error.details}</p>
+                  )}
+                </div>
               )}
 
               <button
