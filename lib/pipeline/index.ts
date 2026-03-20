@@ -4,5 +4,5 @@ export { generateMerkleRoot, generateAllMerkleRoots, SCHEMA_HASH } from './hash'
 export type { MerkleResult } from './hash';
 export { runAnomalyDetection } from './detect';
 export type { AnomalyFinding } from './detect';
-export { generate990Progress } from './map990';
+export { generate990Progress, generate990FromQBO, invalidate990Cache } from './map990';
 export type { Map990Result, FieldData } from './map990';
