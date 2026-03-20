@@ -70,18 +70,7 @@ export default function SignupPage() {
         return;
       }
 
-      const provisionRes = await fetch('/api/auth/provision', {
-        method: 'POST',
-      });
-
-      if (!provisionRes.ok) {
-        const data = await provisionRes.json().catch(() => ({}));
-        setError(data.error || 'Account created but setup failed. Try signing in.');
-        return;
-      }
-
-      const provisionData = await provisionRes.json().catch(() => ({}));
-      window.location.assign(provisionData.isNew ? '/onboarding' : '/dashboard');
+      window.location.assign('/onboarding');
     } catch {
       setError('Something went wrong. Please try again.');
     } finally {
