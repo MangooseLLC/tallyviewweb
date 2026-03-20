@@ -210,7 +210,8 @@ cp .env.example .env.local
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key |
 | `QBO_CLIENT_ID` | QuickBooks Online OAuth client ID |
 | `QBO_CLIENT_SECRET` | QuickBooks Online OAuth client secret |
-| `QBO_REDIRECT_URI` | QuickBooks OAuth callback URL |
+| `QBO_REDIRECT_URI` | QuickBooks OAuth callback URL (must match Intuit Keys tab exactly) |
+| `NEXT_PUBLIC_APP_URL` | Optional public site origin; if `QBO_REDIRECT_URI` is unset, callback is `{origin}/api/qbo/callback` |
 | `QBO_ENVIRONMENT` | `sandbox` or `production` |
 | `QBO_BASE_URL` | QuickBooks API base URL |
 | `OPENAI_API_KEY` | OpenAI API key (for 990 classification) |
@@ -253,6 +254,14 @@ See `tallyview-contracts/.env.example` for testnet configuration.
 ### QuickBooks Online
 
 OAuth 2.0 flow connects organizations to their QuickBooks accounting data. Once authorized, Tallyview syncs accounts and transactions via the QBO API, then runs them through the classification and anomaly detection pipeline. The sync streams progress updates to the UI in real time.
+
+**“redirect_uri is invalid” (Intuit):** The URL Tallyview sends must be listed **exactly** under [Intuit Developer](https://developer.intuit.com) → your app → **Keys & credentials** → **Redirect URIs**. Checklist:
+
+1. Path must be `/api/qbo/callback` (see `app/api/qbo/callback/route.ts`).
+2. Match **scheme** (`http` locally, `https` in production), **host** (`localhost` vs `127.0.0.1` are different—register both if you use both), and **port** if not 80/443.
+3. No trailing slash unless you registered one.
+4. Use the **same** Intuit app (sandbox vs production) as `QBO_CLIENT_ID` / `QBO_CLIENT_SECRET`; redirect URIs are per app.
+5. Set `QBO_REDIRECT_URI` in the environment that runs Next.js (e.g. Vercel env vars) to that exact string. On Vercel, if `QBO_REDIRECT_URI` is unset, the app derives `https://{VERCEL_URL}/api/qbo/callback`—add that exact URL to Intuit, or set `QBO_REDIRECT_URI` to your custom domain callback instead.
 
 ### OpenAI
 
