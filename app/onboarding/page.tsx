@@ -162,14 +162,62 @@ export default function OnboardingPage() {
     }
   }, [step, fetchQboStatus]);
 
-  // Check URL params for QBO callback redirect
+  // QBO OAuth return: show errors (previously ignored) and advance on success
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const err = params.get('error');
+    if (err) {
+      const messages: Record<string, string> = {
+        oauth_denied:
+          'QuickBooks sign-in was cancelled. Use Connect QuickBooks to try again.',
+        state_mismatch:
+          'QuickBooks connection failed the security check (often www vs non-www or blocked cookies). Pick one URL—https://www.tallyview.com or https://tallyview.com—and use it for the whole flow; ensure your Intuit Redirect URI matches exactly.',
+        missing_params:
+          'QuickBooks did not return a complete response. Please try connecting again.',
+        callback_failed:
+          'Could not finish QuickBooks sign-in. Verify Intuit Redirect URI and Vercel QBO_* variables match your live site URL.',
+        auth_required:
+          'Your Tallyview session ended during QuickBooks sign-in. Sign in again, then connect QuickBooks.',
+        no_organization:
+          'No Tallyview organization was found for your account. Complete the organization step, then connect QuickBooks.',
+      };
+      setError(
+        messages[err] ??
+          `QuickBooks connection issue (${err}). Try again or contact support.`,
+      );
+      window.history.replaceState({}, '', '/onboarding');
+    }
     if (params.get('connected') === 'true') {
       setStep('sync');
       window.history.replaceState({}, '', '/onboarding');
     }
   }, []);
+
+  // After auth loads, sync step with server (e.g. QBO connected but URL had no ?connected=)
+  useEffect(() => {
+    if (authLoading || !appUser) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch('/api/qbo/status');
+        const data = await res.json();
+        if (cancelled) return;
+        setQboStatus(data);
+        if (data.connected) {
+          if (data.transactionCount && data.transactionCount > 0) {
+            setStep('done');
+          } else {
+            setStep('sync');
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, appUser]);
 
   const handleSaveOrgName = async () => {
     if (!orgName.trim()) return;

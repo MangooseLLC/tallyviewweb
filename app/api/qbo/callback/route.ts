@@ -4,6 +4,7 @@ import { QBOClient } from '@/lib/qbo-client';
 import { prisma } from '@/lib/prisma';
 import { getSessionEmail } from '@/lib/auth-session';
 import { encrypt } from '@/lib/encryption';
+import { clearQboOAuthStateCookie } from '@/lib/qbo-oauth-cookie';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +19,7 @@ export async function GET(request: NextRequest) {
     const sessionEmail = await getSessionEmail();
     if (!sessionEmail) {
       return NextResponse.redirect(
-        new URL('/login?redirect=/quickbooks&error=auth_required', request.url)
+        new URL('/login?redirect=/onboarding&error=auth_required', request.url)
       );
     }
 
@@ -43,6 +44,25 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const user = await prisma.user.findUnique({
+      where: { email: sessionEmail },
+      include: {
+        memberships: {
+          orderBy: { createdAt: 'asc' },
+          take: 1,
+        },
+      },
+    });
+
+    if (!user || user.memberships.length === 0) {
+      console.error('QBO callback: no organization for user', sessionEmail);
+      const response = NextResponse.redirect(
+        new URL('/onboarding?error=no_organization', request.url),
+      );
+      clearQboOAuthStateCookie(response, request.headers.get('host'));
+      return response;
+    }
+
     const tokens = await exchangeCodeForTokens(code);
 
     const client = new QBOClient(tokens.access_token, realmId);
@@ -54,32 +74,29 @@ export async function GET(request: NextRequest) {
       // fall through with default name
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: sessionEmail },
-      include: { memberships: { where: { role: 'OWNER' }, take: 1 } },
+    const encryptedAccess = process.env.TOKEN_ENCRYPTION_KEY
+      ? encrypt(tokens.access_token)
+      : tokens.access_token;
+    const encryptedRefresh = process.env.TOKEN_ENCRYPTION_KEY
+      ? encrypt(tokens.refresh_token)
+      : tokens.refresh_token;
+
+    await prisma.organization.update({
+      where: { id: user.memberships[0].orgId },
+      data: {
+        name: companyName,
+        qboRealmId: realmId,
+        accessToken: encryptedAccess,
+        refreshToken: encryptedRefresh,
+        tokenExpiresAt: new Date(Date.now() + tokens.expires_in * 1000),
+      },
     });
 
-    if (user && user.memberships.length > 0) {
-      const encryptedAccess = process.env.TOKEN_ENCRYPTION_KEY ? encrypt(tokens.access_token) : tokens.access_token;
-      const encryptedRefresh = process.env.TOKEN_ENCRYPTION_KEY ? encrypt(tokens.refresh_token) : tokens.refresh_token;
-
-      await prisma.organization.update({
-        where: { id: user.memberships[0].orgId },
-        data: {
-          name: companyName,
-          qboRealmId: realmId,
-          accessToken: encryptedAccess,
-          refreshToken: encryptedRefresh,
-          tokenExpiresAt: new Date(Date.now() + tokens.expires_in * 1000),
-        },
-      });
-    }
-
     const response = NextResponse.redirect(
-      new URL('/onboarding?connected=true', request.url)
+      new URL('/onboarding?connected=true', request.url),
     );
 
-    response.cookies.delete('qbo_oauth_state');
+    clearQboOAuthStateCookie(response, request.headers.get('host'));
 
     return response;
   } catch (error) {

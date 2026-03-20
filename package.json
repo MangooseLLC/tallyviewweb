@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "supabase:delete-all-users": "node --env-file=.env.local scripts/delete-all-supabase-auth-users.mjs",
+    "delete-users-by-email": "node --env-file=.env.local scripts/delete-users-by-email.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.19.2",

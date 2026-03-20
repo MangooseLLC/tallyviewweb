@@ -31,6 +31,7 @@ export async function getUserOrg(): Promise<OrgResult> {
       where: { email },
       include: {
         memberships: {
+          orderBy: { createdAt: 'asc' },
           include: { org: true },
           take: 1,
         },
