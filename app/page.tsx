@@ -51,7 +51,6 @@ export default function Home() {
                   View Demo
                 </Link>
               </div>
-              <p className="mt-3 text-xs text-slate-400 font-medium">Free to start. No credit card required.</p>
             </div>
 
             <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
