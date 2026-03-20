@@ -52,7 +52,7 @@ export default function SignupPage() {
 
       setEmailSent(true);
     } catch {
-      setError('Something went wrong. Please try again.');
+      setError({ message: 'Something went wrong. Please try again.' });
     } finally {
       setLoading(false);
     }
